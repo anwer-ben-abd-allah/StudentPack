@@ -4,8 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Table</title>
+    <link rel="stylesheet" href="timetable.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 </head>
 <body>
+    <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Student Pack</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="../index.html">Home</a></li>
+      <li><a href="Time Table/timetable.html">Time Table</a></li>
+      <li><a href="Upcoming Exams/exams.html">Upcoming Exams</a></li>
+      <li><a href="Notes/notes.html">Notes</a></li>
+      <li><a href="Emails/emails.html">Emails</a></li>
+      <li><a href="Pomodoro/pomodoro.html">Pomodoro</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main>
+  <div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Analyse</h5>
+          <p class="card-text">Cours de calcul, algèbre, géométrie.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Algèbre</h5>
+          <p class="card-text">Matrices, Algèbre linéaire, espace vectoriel</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Applications Réparties</h5>
+          <p class="card-text">Micro-Services, Système</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Architecture des Réseaux</h5>
+          <p class="card-text">Sécurite, Supervision des Réseaux, administration </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Comptabilité</h5>
+          <p class="card-text">Bilan, Journal</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Conception des SI</h5>
+          <p class="card-text">Diagramme de cas d'utlisation, de classe...</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Droit</h5>
+          <p class="card-text">Contrats</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Java</h5>
+          <p class="card-text">GUI, POO</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">SGBD</h5>
+          <p class="card-text">SQL, PL SQL, optimisation des requetes</p>
+        </div>
+      </div>
+    </div>
+    </div>
+     <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">UNIX</h5>
+          <p class="card-text">UBUNTU</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">WEB</h5>
+          <p class="card-text">HTML, CSS, bootstrap, JavaScript, PHP</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Anglais</h5>
+          <p class="card-text">Team work, Leadership</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="container mt-4"> <div class="row ajout"> <!-- Formulaire pour ajouter une matière --> <div class="col-md-4"> <div class="form-card"> <h3>➕ Ajouter une matière</h3> <form id="formMatiere"> <div class="mb-3"> <label class="form-label">Matière</label> <select id="matiere" class="form-select" required> <option value="">Choisir...</option> <option>Algèbre</option> <option>Analyse</option> <option>Applications Réparties</option> <option>Architecture des Réseaux</option> <option>Comptabilité</option> <option>Conception des SI</option> <option>Droit</option> <option>Java</option> <option>SGBD</option> <option>UNIX</option> <option>WEB</option> <option>Anglais</option>  </select> </div> <div class="mb-3"> <label class="form-label">Jour</label> <select id="jour" class="form-select" required> <option value="">Choisir...</option> <option>Lundi</option> <option>Mardi</option> <option>Mercredi</option> <option>Jeudi</option> <option>Vendredi</option> </select> </div> <div class="mb-3"> <label class="form-label">Heure</label> <input type="time" id="heure" class="form-control" required> </div> <button type="submit" class="btn btn-success w-100">Ajouter</button> </form> </div> </div> <!-- Tableau emploi du temps --> <div class="col-md-8"> <h3>📅 Mon emploi du temps</h3> <table class="table table-bordered text-center"> <thead> <tr> <th>Jour</th> <th>Heure</th> <th>Matière</th> <th>Action</th> </tr> </thead> <tbody id="emploiDuTemps"> <!-- Les matières ajoutées apparaîtront ici --> </tbody> </table> </div> </div> </div></main>
+
     <a href="../index.html">Go back.</a>
 </body>
+<!-- Bootstrap JS --> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> <!-- Script JS --> 
+ <script> const form = document.getElementById("formMatiere");
+  const emploi = document.getElementById("emploiDuTemps"); 
+form.addEventListener("submit", function(e) { e.preventDefault(); const matiere = document.getElementById("matiere").value;
+ const jour = document.getElementById("jour").value;
+  const heure = document.getElementById("heure").value; // Créer une ligne dans le tableau 
+   const row = document.createElement("tr"); row.innerHTML = ` <td>${jour}</td> <td>${heure}</td> <td>${matiere}</td> <td><button class="btn btn-danger btn-sm">Supprimer</button></td> `; // Bouton supprimer 
+   row.querySelector("button").addEventListener("click", () => { emploi.removeChild(row); }); emploi.appendChild(row); // Réinitialiser le formulaire 
+   form.reset(); }); </script>
 </html>
