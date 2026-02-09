@@ -1,31 +1,27 @@
-/* exams.css */
 
-/* --- CONFIGURATION GÉNÉRALE --- */
 body {
     font-family: 'Manrope', sans-serif;
-    /* IMPORTANT : On ajoute une marge en bas pour que le footer fixe 
-       ne cache pas la dernière ligne du tableau (Anglais/Compta) */
     padding-bottom: 80px; 
 }
 
-/* Les titres utilisent la police plus "carrée" */
+
 h1, h2, h3, h4, .navbar-brand {
     font-family: 'Montserrat', sans-serif;
 }
 
-/* --- LE COMPTE À REBOURS (Jumbotron) --- */
+
 .urgent-box {
-    background-color: #d9534f; /* Rouge "Danger" Bootstrap */
+    background-color: #d9534f; 
     color: white;
     border-radius: 10px;
     padding: 20px 0;
     margin-bottom: 30px;
-    transition: background-color 0.5s ease; /* Transition douce vers le vert */
+    transition: background-color 0.5s ease;
 }
 
-/* Classe ajoutée par JS quand le temps est écoulé */
+
 .urgent-box.finished {
-    background-color: #5cb85c; /* Vert "Success" */
+    background-color: #5cb85c;
 }
 
 .exam-title {
@@ -41,7 +37,7 @@ h1, h2, h3, h4, .navbar-brand {
 .timer-digits {
     font-weight: bold;
     margin: 0;
-    font-size: 3em; /* Gros chiffres pour l'impact visuel */
+    font-size: 3em; 
 }
 
 .exam-location {
@@ -49,9 +45,9 @@ h1, h2, h3, h4, .navbar-brand {
     margin-top: 10px;
 }
 
-/* --- LE TABLEAU (PLANNING) --- */
+
 .planning-header {
-    background-color: #f5f5f5; /* Gris clair pour l'entête du panneau */
+    background-color: #f5f5f5; 
 }
 
 .panel-title {
@@ -59,47 +55,46 @@ h1, h2, h3, h4, .navbar-brand {
     color: #333;
 }
 
-/* Style spécifique pour les dates fusionnées (rowspan) */
+
 .merged-date {
-    vertical-align: middle !important; /* Force le centrage vertical */
+    vertical-align: middle !important;
     font-weight: bold;
     font-size: 1.1em;
-    background-color: #fff !important; /* Garde le fond blanc même si la ligne est colorée */
+    background-color: #fff !important; 
     color: #333;
 }
 
-/* Largeur des colonnes pour une bonne lisibilité */
 .col-date { width: 20%; }
 .col-time { width: 15%; }
-.col-subject { width: 45%; } /* La matière a le plus d'espace */
+.col-subject { width: 45%; }
 .col-room { width: 15%; }
 .col-coeff { width: 5%; }
 
-/* --- LE FOOTER FIXE --- */
+
 footer {
-    background-color: #555;      /* Gris foncé */
+    background-color: #555;    
     color: white;
     padding: 15px;
     width: 100%;
     text-align: center;
     
-    /* Fixation en bas de l'écran */
+
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 999; /* S'assure qu'il est au-dessus de tout */
-    border-top: 3px solid #f0ad4e; /* Petite ligne orange décorative (optionnel) */
+    z-index: 999;
+    border-top: 3px solid #f0ad4e;
 }
 
-/* Lien vers le site de l'INSAT */
+
 .insat-link {
-    color: #f0ad4e; /* Couleur orange/jaune qui ressort bien sur le gris */
+    color: #f0ad4e;
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease;
 }
 
 .insat-link:hover {
-    color: #fff; /* Devient blanc au survol */
+    color: #fff;
     text-decoration: underline;
 }
