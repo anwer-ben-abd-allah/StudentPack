@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Table</title>
-        <!-- Latest compiled and minified CSS -->
+    <title>Upcoming Exams - Student Pack</title>
+    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="exams.css">
 </head>
 <body>
 
@@ -18,16 +24,134 @@
       <li><a href="../index.html">Home <span class="glyphicon glyphicon-home"></span></a></li>
       <li><a href="../Time Table/timetable.html">Time Table <span class="glyphicon glyphicon-calendar"></span></a></li>
       <li><a href="../Tasks/tasks.html">Tasks <span class="glyphicon glyphicon-tasks"></span></a></li>
-      <li   class="active"><a href="exams.html">Upcoming Exams <span class="glyphicon glyphicon-list-alt"></span></a></li>
+      <li class="active"><a href="exams.html">Upcoming Exams <span class="glyphicon glyphicon-list-alt"></span></a></li>
       <li><a href="../Notes/notes.html">Notes <span class="glyphicon glyphicon-pencil"></span></a></li>
       <li><a href="../Emails/emails.html">Emails <span class="glyphicon glyphicon-envelope"></span></a></li>
       <li><a href="../Pomodoro/pomodoro.html">Pomodoro <span class="glyphicon glyphicon-time"></span></a></li>
-      
     </ul>
   </div>
 </nav>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Latest compiled JavaScript -->
-<p>set reminders or a countdown for upcoming exams.</p>
+
+<div class="container">
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="jumbotron urgent-box text-center">
+                <h4><span class="glyphicon glyphicon-time"></span> DÉBUT DES EXAMENS (J-J)</h4>
+                <h2 id="exam-subject" class="exam-title">Analyse</h2>
+                
+                <div class="row countdown-row">
+                    <div class="col-xs-3"><h2 id="days" class="timer-digits">00</h2><small>Jours</small></div>
+                    <div class="col-xs-3"><h2 id="hours" class="timer-digits">00</h2><small>Heures</small></div>
+                    <div class="col-xs-3"><h2 id="minutes" class="timer-digits">00</h2><small>Min</small></div>
+                    <div class="col-xs-3"><h2 id="seconds" class="timer-digits">00</h2><small>Sec</small></div>
+                </div>
+                <br>
+                <p class="exam-location"><span class="glyphicon glyphicon-map-marker"></span> Amphi A</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading planning-header">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-calendar"></span> Planning DS - Semestre 2
+                    </h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="active">
+                                <th class="col-date">Date</th>
+                                <th class="col-time">Heure</th>
+                                <th class="col-subject">Matière</th>
+                                <th class="col-room">Salle</th>
+                                <th class="col-coeff text-center">Coeff</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <tr class="danger">
+                                <td class="merged-date">Jeu 06 Mar</td>
+                                <td>08:30</td>
+                                <td><strong>Analyse</strong></td>
+                                <td>Amphi A</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+
+                            <tr class="danger">
+                                <td rowspan="2" class="merged-date">Ven 07 Mar</td>
+                                <td>08:30</td>
+                                <td><strong>Réseaux</strong></td>
+                                <td>Amphi A</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+                            <tr class="danger">
+                                <td>10:00</td>
+                                <td>SGBD</td>
+                                <td>Amphi A</td>
+                                <td class="text-center">2.5</td>
+                            </tr>
+
+                            <tr class="warning">
+                                <td rowspan="2" class="merged-date">Lun 10 Mar</td>
+                                <td>08:30</td>
+                                <td><strong>Conception (CSI)</strong></td>
+                                <td>Amphi B</td>
+                                <td class="text-center">4.0</td>
+                            </tr>
+                            <tr class="warning">
+                                <td>10:00</td>
+                                <td>Droit</td>
+                                <td>Amphi B</td>
+                                <td class="text-center">1.5</td>
+                            </tr>
+
+                            <tr>
+                                <td rowspan="2" class="merged-date">Mar 11 Mar</td>
+                                <td>08:30</td>
+                                <td><strong>Algèbre</strong></td>
+                                <td>Amphi C</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+                            <tr>
+                                <td>10:00</td>
+                                <td>Anglais</td>
+                                <td>Amphi C</td>
+                                <td class="text-center">1.5</td>
+                            </tr>
+
+                            <tr>
+                                <td rowspan="2" class="merged-date">Mer 12 Mar</td>
+                                <td>08:30</td>
+                                <td><strong>Applications Réparties</strong></td>
+                                <td>Salle 201</td>
+                                <td class="text-center">2.5</td>
+                            </tr>
+                            <tr>
+                                <td>10:00</td>
+                                <td>Comptabilité</td>
+                                <td>Salle 201</td>
+                                <td class="text-center">1.5</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="container-fluid text-center">
+    <p>Student Pack © 2025 | <a href="https://insat.rnu.tn/" target="_blank" class="insat-link">Site Officiel de l'INSAT</a></p>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="exams.js"></script>
+
 </body>
 </html>
