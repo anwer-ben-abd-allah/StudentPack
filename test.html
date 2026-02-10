@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSAT GL2  - Plateforme Étudiante</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --insat-blue: #1e3a5f;
+            --insat-red: #c41e3a;
+            --primary: #2563eb;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* 
+            HEADER & NAVIGATION
+           Membre */
+        .header {
+            background: var(--white);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            padding: 10px 0;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .header-top-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-main {
+            padding: 15px 0;
+        }
+
+        .header-main-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--insat-blue);
+        }
+
+        .logo-text span {
+            color: var(--insat-red);
+        }
+
+        .logo-tagline {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: var(--dark);
+            padding: 10px 0;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--insat-blue);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--insat-red);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            color: white;
+        }
+
+        .hero {
+            padding: 150px 0 80px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            color: var(--insat-blue);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--insat-blue);
+            border: 2px solid var(--insat-blue);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--insat-blue);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .timetable {
+            padding: 80px 0;
+            background: var(--white);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: rgba(30, 58, 95, 0.1);
+            color: var(--insat-blue);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .section-description {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .timetable-container {
+            background: var(--light);
+            border-radius: 20px;
+            padding: 25px;
+            overflow-x: auto;
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px;
+            min-width: 900px;
+        }
+
+        .timetable-table th {
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            color: white;
+            padding: 15px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .timetable-table th:first-child {
+            background: var(--insat-red);
+        }
+
+        .timetable-table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .time-cell {
+            background: rgba(30, 58, 95, 0.1);
+            padding: 12px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--insat-blue);
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .class-cell {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 80px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+
+        .class-cell:hover {
+            transform: scale(1.02);
+        }
+
+        /* Couleurs par matière */
+        .class-cell.reseaux { border-color: #3b82f6; }
+        .class-cell.analyse { border-color: #8b5cf6; }
+        .class-cell.algebre { border-color: #ec4899; }
+        .class-cell.anglais { border-color: #f59e0b; }
+        .class-cell.conception { border-color: #14b8a6; }
+        .class-cell.sgbd { border-color: #06b6d4; }
+        .class-cell.java { border-color: #ef4444; }
+        .class-cell.unix { border-color: #10b981; }
+        .class-cell.comptabilite { border-color: #f97316; }
+        .class-cell.app-reparties { border-color: #6366f1; }
+        .class-cell.web { border-color: #a855f7; }
+        .class-cell.droit { border-color: #78716c; }
+
+        .cell-subject {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .cell-prof {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-bottom: 3px;
+        }
+
+        .cell-room {
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cell-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .cell-type.c { background: #dbeafe; color: #1d4ed8; }
+        .cell-type.td { background: #d1fae5; color: #059669; }
+        .cell-type.tp { background: #fee2e2; color: #dc2626; }
+
+        .empty-cell {
+            background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 8px, #f1f5f9 8px, #f1f5f9 16px);
+            min-height: 80px;
+            border-radius: 10px;
+        }
+
+        .break-cell {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        /* ============================================
+           SECTION 5: PROFESSEURS
+           Membre: _____________
+        ============================================ */
+        .professors {
+            padding: 80px 0;
+            background: var(--light);
+        }
+
+        .professors-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+
+        .professor-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .professor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .professor-card:nth-child(1)::before { background: #3b82f6; }
+        .professor-card:nth-child(2)::before { background: #8b5cf6; }
+        .professor-card:nth-child(3)::before { background: #ec4899; }
+        .professor-card:nth-child(4)::before { background: #f59e0b; }
+        .professor-card:nth-child(5)::before { background: #14b8a6; }
+        .professor-card:nth-child(6)::before { background: #ef4444; }
+        .professor-card:nth-child(7)::before { background: #10b981; }
+        .professor-card:nth-child(8)::before { background: #06b6d4; }
+        .professor-card:nth-child(9)::before { background: #6366f1; }
+        .professor-card:nth-child(10)::before { background: #a855f7; }
+        .professor-card:nth-child(11)::before { background: #78716c; }
+        .professor-card:nth-child(12)::before { background: #f97316; }
+
+        .professor-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .prof-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .professor-card:nth-child(1) .prof-avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .professor-card:nth-child(2) .prof-avatar { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .professor-card:nth-child(3) .prof-avatar { background: linear-gradient(135deg, #ec4899, #be185d); }
+        .professor-card:nth-child(4) .prof-avatar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .professor-card:nth-child(5) .prof-avatar { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+        .professor-card:nth-child(6) .prof-avatar { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .professor-card:nth-child(7) .prof-avatar { background: linear-gradient(135deg, #10b981, #059669); }
+        .professor-card:nth-child(8) .prof-avatar { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .professor-card:nth-child(9) .prof-avatar { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .professor-card:nth-child(10) .prof-avatar { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+        .professor-card:nth-child(11) .prof-avatar { background: linear-gradient(135deg, #78716c, #57534e); }
+        .professor-card:nth-child(12) .prof-avatar { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+        .prof-name {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .prof-subject {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .prof-details {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        .subjects {
+            padding: 80px 0;
+            background: var(--white);
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .subject-card {
+            background: var(--light);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .subject-header {
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .subject-card:nth-child(1) .subject-header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .subject-card:nth-child(2) .subject-header { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .subject-card:nth-child(3) .subject-header { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .subject-card:nth-child(4) .subject-header { background: linear-gradient(135deg, #10b981, #059669); }
+        .subject-card:nth-child(5) .subject-header { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .subject-card:nth-child(6) .subject-header { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+
+        .subject-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .subject-header h3 {
+            font-size: 1.2rem;
+        }
+
+        .subject-content {
+            padding: 25px;
+        }
+
+        .subject-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .subject-info span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .subject-card:nth-child(1) .progress-fill { background: linear-gradient(135deg, #3b82f6, #1d4ed8); width: 75%; }
+        .subject-card:nth-child(2) .progress-fill { background: linear-gradient(135deg, #8b5cf6, #6d28d9); width: 60%; }
+        .subject-card:nth-child(3) .progress-fill { background: linear-gradient(135deg, #ef4444, #dc2626); width: 80%; }
+        .subject-card:nth-child(4) .progress-fill { background: linear-gradient(135deg, #10b981, #059669); width: 45%; }
+        .subject-card:nth-child(5) .progress-fill { background: linear-gradient(135deg, #06b6d4, #0891b2); width: 55%; }
+        .subject-card:nth-child(6) .progress-fill { background: linear-gradient(135deg, #a855f7, #7c3aed); width: 70%; }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        .resources {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--insat-blue), var(--primary));
+            color: white;
+        }
+
+        .resources .section-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .resources .section-title,
+        .resources .section-description {
+            color: white;
+        }
+
+        .resources .section-description {
+            opacity: 0.9;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .resource-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .resource-icon.pdf { background: #ef4444; }
+        .resource-icon.video { background: #3b82f6; }
+        .resource-icon.code { background: #10b981; }
+        .resource-icon.slides { background: #f59e0b; }
+
+        .resource-card h4 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .resource-card p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+
+        .resource-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quick-links {
+            padding: 80px 0;
+            background: var(--light);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .link-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .link-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: var(--light);
+        }
+
+        .link-card h4 {
+            font-size: 1rem;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .link-card p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand p {
+            color: rgba(255,255,255,0.6);
+            margin-top: 15px;
+            line-height: 1.8;
+        }
+
+        .footer-links h4 {
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-links h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 3px;
+            background: var(--insat-red);
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.6);
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 25px;
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer-bottom span {
+            color: var(--insat-red);
+        }
+        @media (max-width: 1024px) {
+            .professors-grid,
+            .resources-grid,
+            .links-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .subjects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .professors-grid,
+            .subjects-grid,
+            .resources-grid,
+            .links-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .footer-links h4::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <div class="header-top-content">
+                    <span>🏛️ Institut National des Sciences Appliquées et de Technologie</span>
+                    <span>📅 Semestre 2 - 2024/2025 | GL2</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-main">
+            <div class="container">
+                <div class="header-main-content">
+                    <div class="logo">
+                        <div class="logo-icon">INSAT</div>
+                        <div>
+                            <div class="logo-text">INSAT<span></span></div>
+                            <div class="logo-tagline">Génie Logiciel - 2ème Année</div>
+                        </div>
+                    </div>
+                    <nav class="nav-menu">
+                        <a href="#accueil" class="nav-link">Accueil</a>
+                        <a href="#emploi" class="nav-link">Emploi du temps</a>
+                        <a href="#profs" class="nav-link">Professeurs</a>
+                        <a href="#matieres" class="nav-link">Matières</a>
+                        <a href="#ressources" class="nav-link">Ressources</a>
+                        <a href="#liens" class="nav-link">Liens</a>
+                    </nav>
+                    <button class="btn btn-primary">Connexion</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" id="accueil">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Bienvenue sur <span>INSAT </span></h1>
+                    <p>Votre plateforme étudiante dédiée à la filière Génie Logiciel. Consultez votre emploi du temps, accédez aux ressources de cours et restez organisé tout au long du semestre.</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary">📅 Voir l'emploi du temps</button>
+                        <button class="btn btn-secondary">📚 Ressources</button>
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Matières</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👨‍🏫</div>
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Professeurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-number">28h</div>
+                        <div class="stat-label">Par semaine</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Salles</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="timetable" id="emploi">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">📅 Planning</span>
+                <h2 class="section-title">Emploi du Temps GL2</h2>
+                <p class="section-description">Votre planning hebdomadaire complet pour le semestre 2</p>
+            </div>
+
+            <div class="timetable-container">
+                <table class="timetable-table">
+                    <thead>
+                        <tr>
+                            <th>Horaire</th>
+                            <th>Lundi</th>
+                            <th>Mardi</th>
+                            <th>Mercredi</th>
+                            <th>Jeudi</th>
+                            <th>Vendredi</th>
+                            <th>Samedi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 08:30 - 10:00 -->
+                        <tr>
+                            <td><div class="time-cell">08:30<br>↓<br>10:00</div></td>
+                            <td>
+                                <div class="class-cell reseaux">
+                                    <div class="cell-subject">Architecture des Réseaux</div>
+                                    <div class="cell-prof">Loukil Adlène</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell analyse">
+                                    <div class="cell-subject">Analyse 2</div>
+                                    <div class="cell-prof">Trigui Elloumi Fatma</div>
+                                    <div class="cell-room">📍 227</div>
+                                    <span class="cell-type td">TD</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell analyse">
+                                    <div class="cell-subject">Analyse 2</div>
+                                    <div class="cell-prof">Trigui Elloumi Fatma</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell sgbd">
+                                    <div class="cell-subject">Systèmes Gestion BD</div>
+                                    <div class="cell-prof">Baklouti Fatma</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell comptabilite">
+                                    <div class="cell-subject">Comptabilité</div>
+                                    <div class="cell-prof">Bouaziz Samira</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell app-reparties">
+                                    <div class="cell-subject">Applications Réparties</div>
+                                    <div class="cell-prof">Ben Hassouna Asma</div>
+                                    <div class="cell-room">📍 LI116</div>
+                                    <span class="cell-type tp">TP A/B</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- 10:15 - 11:45 -->
+                        <tr>
+                            <td><div class="time-cell">10:15<br>↓<br>11:45</div></td>
+                            <td>
+                                <div class="class-cell algebre">
+                                    <div class="cell-subject">Algèbre 2</div>
+                                    <div class="cell-prof">Hmida Jendoubi Nadia</div>
+                                    <div class="cell-room">📍 135</div>
+                                    <span class="cell-type td">TD</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell conception">
+                                    <div class="cell-subject">Concep. Syst. Inform.</div>
+                                    <div class="cell-prof">Hanchi Thouraya</div>
+                                    <div class="cell-room">📍 LI177</div>
+                                    <span class="cell-type tp">TP A/B</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell conception">
+                                    <div class="cell-subject">Conception SI</div>
+                                    <div class="cell-prof">Bouzidi Sonia</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell java">
+                                    <div class="cell-subject">Atelier Java</div>
+                                    <div class="cell-prof">Jemaï Abderrazak</div>
+                                    <div class="cell-room">📍 LI2121</div>
+                                    <span class="cell-type tp">C/TP</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell algebre">
+                                    <div class="cell-subject">Algèbre 2</div>
+                                    <div class="cell-prof">Hmida Jendoubi Nadia</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell web">
+                                    <div class="cell-subject">Technologie Web</div>
+                                    <div class="cell-prof">Sellaouti Aymen</div>
+                                    <div class="cell-room">📍 LI175</div>
+                                    <span class="cell-type tp">C/TP</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- PAUSE DÉJEUNER -->
+                        <tr>
+                            <td><div class="time-cell">12:00<br>↓<br>13:30</div></td>
+                            <td colspan="6">
+                                <div class="break-cell">🍽️ Pause Déjeuner</div>
+                            </td>
+                        </tr>
+
+                        <!-- 13:30 - 15:00 -->
+                        <tr>
+                            <td><div class="time-cell">13:30<br>↓<br>15:00</div></td>
+                            <td>
+                                <div class="class-cell anglais">
+                                    <div class="cell-subject">Anglais</div>
+                                    <div class="cell-prof">Ben Rejeb Ihsen</div>
+                                    <div class="cell-room">📍 145</div>
+                                    <span class="cell-type tp">TP A/B</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell sgbd">
+                                    <div class="cell-subject">Gest. Admin. BD</div>
+                                    <div class="cell-prof">Baklouti Fatma</div>
+                                    <div class="cell-room">📍 LI116</div>
+                                    <span class="cell-type tp">TD/TP</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell java">
+                                    <div class="cell-subject">Atelier Java</div>
+                                    <div class="cell-prof">Jemaï Abderrazak</div>
+                                    <div class="cell-room">📍 LI2121</div>
+                                    <span class="cell-type tp">C/TP</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell unix">
+                                    <div class="cell-subject">Unix</div>
+                                    <div class="cell-prof">Mami Imen</div>
+                                    <div class="cell-room">📍 LI177</div>
+                                    <span class="cell-type tp">C/TP</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell app-reparties">
+                                    <div class="cell-subject">Applications Réparties</div>
+                                    <div class="cell-prof">Ben Hassouna Asma</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell droit">
+                                    <div class="cell-subject">Droit</div>
+                                    <div class="cell-prof">Bali Ines</div>
+                                    <div class="cell-room">📍 A5</div>
+                                    <span class="cell-type c">C</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- 15:15 - 16:45 -->
+                        <tr>
+                            <td><div class="time-cell">15:15<br>↓<br>16:45</div></td>
+                            <td><div class="empty-cell"></div></td>
+                            <td>
+                                <div class="class-cell reseaux">
+                                    <div class="cell-subject">Architecture Réseaux</div>
+                                    <div class="cell-prof">Loukil Adlène</div>
+                                    <div class="cell-room">📍 LI2121BIS</div>
+                                    <span class="cell-type tp">TD/TP</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="class-cell unix">
+                                    <div class="cell-subject">Unix</div>
+                                    <div class="cell-prof">Mami Imen</div>
+                                    <div class="cell-room">📍 LI177</div>
+                                    <span class="cell-type tp">C/TP</span>
+                                </div>
+                            </td>
+                            <td><div class="empty-cell"></div></td>
+                            <td>
+                                <div class="class-cell conception">
+                                    <div class="cell-subject">Conception SI</div>
+                                    <div class="cell-prof">Bouzidi Sonia</div>
+                                    <div class="cell-room">📍 235</div>
+                                    <span class="cell-type td">TD</span>
+                                </div>
+                            </td>
+                            <td><div class="empty-cell"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         PROFESSEURS
+         Membre: _____________
+    ============================================ -->
+    <section class="professors" id="profs">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">👨‍🏫 Équipe Pédagogique</span>
+                <h2 class="section-title">Nos Professeurs</h2>
+                <p class="section-description">L'équipe enseignante de la filière GL2</p>
+            </div>
+
+            <div class="professors-grid">
+                <div class="professor-card">
+                    <div class="prof-avatar">LA</div>
+                    <div class="prof-name">Loukil Adlène</div>
+                    <div class="prof-subject">Architecture des Réseaux</div>
+                    <div class="prof-details">📍 A5 / LI2121BIS</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">TF</div>
+                    <div class="prof-name">Trigui Elloumi Fatma</div>
+                    <div class="prof-subject">Analyse 2</div>
+                    <div class="prof-details">📍 227 / A5</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">HN</div>
+                    <div class="prof-name">Hmida Jendoubi Nadia</div>
+                    <div class="prof-subject">Algèbre 2</div>
+                    <div class="prof-details">📍 135 / A5</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">BI</div>
+                    <div class="prof-name">Ben Rejeb Ihsen</div>
+                    <div class="prof-subject">Anglais</div>
+                    <div class="prof-details">📍 145</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">HT</div>
+                    <div class="prof-name">Hanchi Thouraya</div>
+                    <div class="prof-subject">Conception SI (TP)</div>
+                    <div class="prof-details">📍 LI177</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">BS</div>
+                    <div class="prof-name">Bouzidi Sonia</div>
+                    <div class="prof-subject">Conception SI</div>
+                    <div class="prof-details">📍 A5 / 235</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">BF</div>
+                    <div class="prof-name">Baklouti Fatma</div>
+                    <div class="prof-subject">SGBD</div>
+                    <div class="prof-details">📍 A5 / LI116</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">JA</div>
+                    <div class="prof-name">Jemaï Abderrazak</div>
+                    <div class="prof-subject">Atelier Java</div>
+                    <div class="prof-details">📍 LI2121</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">MI</div>
+                    <div class="prof-name">Mami Imen</div>
+                    <div class="prof-subject">Unix</div>
+                    <div class="prof-details">📍 LI177</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">SA</div>
+                    <div class="prof-name">Sellaouti Aymen</div>
+                    <div class="prof-subject">Technologie Web</div>
+                    <div class="prof-details">📍 LI175</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">BI</div>
+                    <div class="prof-name">Bali Ines</div>
+                    <div class="prof-subject">Droit</div>
+                    <div class="prof-details">📍 A5</div>
+                </div>
+
+                <div class="professor-card">
+                    <div class="prof-avatar">BA</div>
+                    <div class="prof-name">Ben Hassouna Asma</div>
+                    <div class="prof-subject">Applications Réparties</div>
+                    <div class="prof-details">📍 A5 / LI116</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         MATIÈRES
+         Membre: _____________
+    ============================================ -->
+    <section class="subjects" id="matieres">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">📚 Modules</span>
+                <h2 class="section-title">Nos Matières</h2>
+                <p class="section-description">Les modules enseignés ce semestre</p>
+            </div>
+
+            <div class="subjects-grid">
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">🌐</div>
+                        <h3>Architecture des Réseaux</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👨‍🏫 M. Loukil Adlène</span>
+                            <span>📍 A5 / LI2121BIS</span>
+                            <span>⏰ C + TD/TP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>75%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">📐</div>
+                        <h3>Analyse 2</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👩‍🏫 Mme Trigui Elloumi Fatma</span>
+                            <span>📍 227 / A5</span>
+                            <span>⏰ C + TD</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>60%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">☕</div>
+                        <h3>Atelier Java</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👨‍🏫 M. Jemaï Abderrazak</span>
+                            <span>📍 LI2121</span>
+                            <span>⏰ C/TP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>80%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">🐧</div>
+                        <h3>Unix</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👩‍🏫 Mme Mami Imen</span>
+                            <span>📍 LI177</span>
+                            <span>⏰ C/TP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>45%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">🗄️</div>
+                        <h3>SGBD</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👩‍🏫 Mme Baklouti Fatma</span>
+                            <span>📍 A5 / LI116</span>
+                            <span>⏰ C + TD/TP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>55%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subject-card">
+                    <div class="subject-header">
+                        <div class="subject-icon">🌐</div>
+                        <h3>Technologie Web</h3>
+                    </div>
+                    <div class="subject-content">
+                        <div class="subject-info">
+                            <span>👨‍🏫 M. Sellaouti Aymen</span>
+                            <span>📍 LI175</span>
+                            <span>⏰ C/TP</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>70%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="resources" id="ressources">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">📂 Documents</span>
+                <h2 class="section-title">Ressources de Cours</h2>
+                <p class="section-description">Supports pédagogiques et documents utiles</p>
+            </div>
+
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <div class="resource-icon pdf">📄</div>
+                    <h4>Cours POO Java</h4>
+                    <p>Atelier Java • M. Jemaï</p>
+                    <div class="resource-meta">
+                        <span>📁 4.2 MB</span>
+                        <span>PDF</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon code">💻</div>
+                    <h4>TPs Unix - Scripts</h4>
+                    <p>Unix • Mme Mami</p>
+                    <div class="resource-meta">
+                        <span>📁 1.8 MB</span>
+                        <span>ZIP</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon slides">📊</div>
+                    <h4>Modèle Relationnel</h4>
+                    <p>SGBD • Mme Baklouti</p>
+                    <div class="resource-meta">
+                        <span>📁 8.5 MB</span>
+                        <span>PPT</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon video">🎬</div>
+                    <h4>Config Cisco</h4>
+                    <p>Réseaux • M. Loukil</p>
+                    <div class="resource-meta">
+                        <span>⏱ 45 min</span>
+                        <span>Video</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon pdf">📄</div>
+                    <h4>Série TD Analyse</h4>
+                    <p>Analyse 2 • Mme Trigui</p>
+                    <div class="resource-meta">
+                        <span>📁 2.1 MB</span>
+                        <span>PDF</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon code">💻</div>
+                    <h4>Template HTML/CSS</h4>
+                    <p>Web • M. Sellaouti</p>
+                    <div class="resource-meta">
+                        <span>📁 3.4 MB</span>
+                        <span>ZIP</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon slides">📊</div>
+                    <h4>Diagrammes UML</h4>
+                    <p>Conception SI • Mme Bouzidi</p>
+                    <div class="resource-meta">
+                        <span>📁 5.2 MB</span>
+                        <span>PPT</span>
+                    </div>
+                </div>
+
+                <div class="resource-card">
+                    <div class="resource-icon pdf">📄</div>
+                    <h4>Corrigé DS Algèbre</h4>
+                    <p>Algèbre 2 • Mme Jendoubi</p>
+                    <div class="resource-meta">
+                        <span>📁 1.5 MB</span>
+                        <span>PDF</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-links" id="liens">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">🔗 Accès Rapide</span>
+                <h2 class="section-title">Liens Utiles</h2>
+                <p class="section-description">Services et plateformes INSAT</p>
+            </div>
+
+            <div class="links-grid">
+                <div class="link-card">
+                    <div class="link-icon">🏛️</div>
+                    <h4>Site INSAT</h4>
+                    <p>Site officiel de l'institut</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">📧</div>
+                    <h4>Webmail</h4>
+                    <p>Messagerie universitaire</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">📚</div>
+                    <h4>Bibliothèque</h4>
+                    <p>Catalogue en ligne</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">📊</div>
+                    <h4>Notes</h4>
+                    <p>Consultation des résultats</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">📅</div>
+                    <h4>Examens</h4>
+                    <p>Planning des DS</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">🎓</div>
+                    <h4>Scolarité</h4>
+                    <p>Service administratif</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">💻</div>
+                    <h4>Moodle</h4>
+                    <p>Plateforme e-learning</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="link-icon">🏠</div>
+                    <h4>Foyer</h4>
+                    <p>Hébergement étudiant</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <div class="logo-icon">INSAT</div>
+                        <div>
+                            <div class="logo-text">INSAT<span></span></div>
+                        </div>
+                    </div>
+                    <p>Plateforme dédiée aux étudiants GL2 de l'INSAT. Projet universitaire réalisé dans le cadre du cours de Technologie Web.</p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="#accueil">Accueil</a></li>
+                        <li><a href="#emploi">Emploi du temps</a></li>
+                        <li><a href="#profs">Professeurs</a></li>
+                        <li><a href="#matieres">Matières</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Ressources</h4>
+                    <ul>
+                        <li><a href="#">Cours</a></li>
+                        <li><a href="#">TPs</a></li>
+                        <li><a href="#">Annales</a></li>
+                        <li><a href="#">Projets</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>INSAT</h4>
+                    <ul>
+                        <li><a href="#">Site Officiel</a></li>
+                        <li><a href="#">Webmail</a></li>
+                        <li><a href="#">Moodle</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2025 INSAT • Fait avec <span></span> par les étudiants GL2 • Projet Technologie Web</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
