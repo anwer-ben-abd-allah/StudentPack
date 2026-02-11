@@ -1,34 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Table</title>
-        <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Pack - Notes</title>
+  <style>
+    /* CSS: Making it look good */
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .notes-sidebar {
+      width: 30%;
+      background: #f4f4f4;
+      border-right: 2px solid #ddd;
+      padding: 20px;
+    }
+
+    .note-item {
+      padding: 10px;
+      background: white;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .note-item:hover {
+      background: #e0e0e0;
+    }
+
+    /* Main Editor Styles */
+    .notes-preview {
+      width: 70%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    textarea {
+      height: 300px;
+      resize: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
+
 <body>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Student Pack</a>
+  <div class="notes-sidebar">
+    <h2>My Notes</h2>
+    <div id="notes-list">
+      <div class="note-item">Math Homework</div>
+      <div class="note-item">Physics Definitions</div>
     </div>
-    <ul class="nav navbar-nav">
-      <li><a href="../index.html">Home <span class="glyphicon glyphicon-home"></span></a></li>
-      <li><a href="../Time Table/timetable.html">Time Table <span class="glyphicon glyphicon-calendar"></span></a></li>
-      <li><a href="../Tasks/tasks.html">Tasks <span class="glyphicon glyphicon-tasks"></span></a></li>
-      <li><a href="../Upcoming Exams/exams.html">Upcoming Exams <span class="glyphicon glyphicon-list-alt"></span></a></li>
-      <li  class="active"><a href="notes.html">Notes <span class="glyphicon glyphicon-pencil"></span></a></li>
-      <li><a href="../Emails/emails.html">Emails <span class="glyphicon glyphicon-envelope"></span></a></li>
-      <li><a href="../Pomodoro/pomodoro.html">Pomodoro <span class="glyphicon glyphicon-time"></span></a></li>
-      
-    </ul>
   </div>
-</nav>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Latest compiled JavaScript -->
-  <p>write notes or reminders (set password for notes, save notes in a database, sort by date ...)</p>
+
+  <div class="notes-preview">
+    <input type="text" id="note-title" placeholder="Note Title...">
+    <textarea id="note-body" placeholder="Type your notes here..."></textarea>
+    <button id="btn-save">Save Note</button>
+  </div>
+  <script>
+    //get the notes
+   let notes = JSON.parse(localStorage.getItem('myAppNotes')) || [];
+    //get and cean the notes list
+    const list = document.getElementById('notes-list');
+    list.innerHTML = '';
+    //loop through the notes
+    function renderNotes() {
+        list.innerHTML = ''; // Clear the old list
+        
+        // FIX 2: forEach uses parentheses ( )
+        notes.forEach(function(note) {
+            const noteItem = document.createElement('div');
+            noteItem.className = 'note-item';
+            noteItem.innerText = note.title;
+            list.appendChild(noteItem); 
+        });
+    }
+        // add event listner
+    const svbtn=document.getElementById('btn-save');
+    svbtn.addEventListener('click',function(){
+      const title = document.getElementById('note-title');
+      const body = document.getElementById('note-body');
+      if(title.value ===''){
+        alert('Please enter a title');
+        return;
+      }
+      const note={
+        title:title.value,
+        body:body.value
+      }
+      notes.push(note);
+      localStorage.setItem('myAppNotes',JSON.stringify(notes));
+      title.value='';
+      body.value='';
+      renderNotes();
+
+
+    })
+  </script>
+
+
 </body>
 
 </html>
