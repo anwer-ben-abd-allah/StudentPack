@@ -8,8 +8,6 @@ body {
     background-image: url("	https://insat.rnu.tn/assets/images/insat-header-2.jpg");
     background-repeat: no-repeat;
     background-size:contain;   
-    font-family: "Roboto", sans-serif;
-    font-weight: bold;
     color:#FFF6E5;
     height:100%;
     
@@ -17,6 +15,5 @@ body {
 
 #welcomeEl {
     text-align: center;
-    font-family: "Roboto", sans-serif;
 }
 
