@@ -39,9 +39,9 @@ button {
     font-weight: bold;
 }
 
-.start { background: green; }
-.pause { background: yellow; }
-.reset { background: red; }
+#start { background: green; }
+#pause { background: yellow; }
+#reset { background: red; }
 
 
 
