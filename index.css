@@ -5,15 +5,20 @@ footer {
 }
 
 body {
-    background-image: url("	https://insat.rnu.tn/assets/images/insat-header-2.jpg");
+    background-image: url("insat.jpg");
     background-repeat: no-repeat;
     background-size:contain;   
     color:#FFF6E5;
     height:100%;
-    
+
 }
 
 #welcomeEl {
     text-align: center;
 }
-
+#welcomeP {
+    text-align: center;
+    color:black;
+    font-size: large;
+    border: 1px solid black;
+}

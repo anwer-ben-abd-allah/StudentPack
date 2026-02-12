@@ -1,0 +1,48 @@
+body {
+    
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.pomodoro {
+    max-width: 300px;
+    margin: 40px auto; /*top bottom + right left */
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.pomodoro h2 {
+    margin-bottom: 20px;
+}
+
+.timer {
+    font-size: 48px;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 50%;
+    background: darkgray;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+button {
+    color:black;
+    margin: 0 5px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.start { background: green; }
+.pause { background: yellow; }
+.reset { background: red; }
+
+
+
+
