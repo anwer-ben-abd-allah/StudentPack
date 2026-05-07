@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dropout Risk Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2234;
+    --border: #1e293b;
+    --accent: #6ee7b7;
+    --accent2: #38bdf8;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --low: #6ee7b7;
+    --mid: #fbbf24;
+    --high: #f87171;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* GLOW BLOBS */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 500px; height: 500px; background: #6ee7b7; top: -150px; left: -100px; }
+  .blob-2 { width: 400px; height: 400px; background: #38bdf8; bottom: -100px; right: -80px; }
+
+  /* ── NAVBAR ── */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 32px;
+    height: 64px;
+    background: rgba(11,15,26,0.75);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: #fff;
+    flex-shrink: 0;
+    margin-right: 36px;
+  }
+  .nav-brand-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2.5s infinite;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    list-style: none;
+    flex: 1;
+  }
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-links a:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+  }
+  .nav-links a.active {
+    color: var(--accent);
+    background: rgba(110,231,183,0.1);
+    border: 1px solid rgba(110,231,183,0.2);
+  }
+
+  .nav-logout {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.2);
+    color: var(--danger);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .nav-logout:hover {
+    background: rgba(248,113,113,0.2);
+  }
+
+  /* mobile hamburger */
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 18px;
+    line-height: 1;
+  }
+  @media (max-width: 768px) {
+    .navbar { padding: 0 16px; }
+    .nav-links { display: none; position: absolute; top: 64px; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 4px;
+      background: rgba(11,15,26,0.97); border-bottom: 1px solid var(--border);
+      padding: 12px 16px 16px; }
+    .nav-links.open { display: flex; }
+    .nav-links a { padding: 10px 14px; }
+    .nav-logout { display: none; }
+    .nav-toggle { display: block; }
+  }
+
+  /* LAYOUT */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 96px 24px 80px; /* top offset for navbar */
+  }
+
+  /* HEADER */
+  header {
+    margin-bottom: 56px;
+    animation: fadeUp 0.7s ease both;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(110,231,183,0.1);
+    border: 1px solid rgba(110,231,183,0.25);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.7s ease both;
+  }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.2s; }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+  /* FIELD */
+  .field { display: flex; flex-direction: column; gap: 10px; }
+  .field label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .field label span {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(110,231,183,0.08);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  /* SLIDER */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+    transition: transform 0.15s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
+  input[type=range]::-webkit-slider-runnable-track { border-radius: 4px; }
+
+  /* SELECT */
+  .select-group { display: flex; gap: 8px; }
+  .select-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .select-btn.active {
+    background: rgba(110,231,183,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* NUMBER INPUT */
+  .num-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .num-input:focus { border-color: var(--accent); }
+
+  /* PREDICT BUTTON */
+  .predict-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: #0b1a12;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .predict-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .predict-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(110,231,183,0.3); }
+  .predict-btn:hover::after { opacity: 1; }
+  .predict-btn:active { transform: translateY(0); }
+
+  /* RESULT PANEL */
+  #result-panel {
+    display: none;
+    animation: fadeUp 0.5s ease both;
+  }
+  #result-panel.show { display: block; }
+
+  .risk-display {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .risk-circle {
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .risk-circle svg { transform: rotate(-90deg); }
+  .risk-circle .track { stroke: var(--border); }
+  .risk-circle .fill {
+    stroke-dasharray: 339;
+    stroke-dashoffset: 339;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1), stroke 0.5s;
+  }
+  .risk-circle .label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .risk-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .risk-word {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .risk-info { flex: 1; min-width: 200px; }
+  .risk-level-badge {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .risk-message {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* GAUGE BAR */
+  .gauge-bar-wrap { margin-bottom: 28px; }
+  .gauge-bar-label {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .gauge-bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .gauge-bar-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 100px;
+    transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1), background 0.5s;
+  }
+
+  /* ZONE MARKERS */
+  .zones {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .zone {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .zone.low { background: var(--low); flex: 35; opacity: 0.4; }
+  .zone.mid { background: var(--mid); flex: 25; opacity: 0.4; }
+  .zone.high { background: var(--high); flex: 40; opacity: 0.4; }
+
+  /* FACTOR BARS */
+  .factors { }
+  .factor-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .factor-name { font-size: 12px; color: var(--muted); width: 160px; flex-shrink: 0; }
+  .factor-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .factor-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+  .factor-val { font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* RECOMMENDATIONS */
+  .recommendations { margin-top: 24px; }
+  .rec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .rec-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border-left: 3px solid transparent;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #94a3b8;
+  }
+  .rec-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 12px;
+    color: var(--muted);
+    animation: fadeUp 0.7s ease 0.4s both;
+  }
+  select, input[type="number"] {
+      background: var(--track);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text); font-family: 'DM Mono', monospace;
+      font-size: .85rem; padding: 10px 14px;
+      outline: none; width: 100%;
+      transition: border-color .2s;
+    }
+    select:focus, input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+    select option { background: var(--surface); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="nav-brand" href="#">
+    <div class="nav-brand-dot"></div>
+    Student Pack
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html">🏠 Accueil</a></li>
+    <li><a href="../Time Table/timetable.php">📅 Emploi du temps</a></li>
+    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
+    <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
+    <li><a href="../Notes/note.html">📓 Notes</a></li>
+    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
+    <li><a href="../dropout_risk_detector/dropout.html" class="active">🤖 Dropout Detector</a></li>
+  </ul>
+  <button class="nav-logout" onclick="alert('Déconnexion…')">↩ Déconnexion</button>
+  <button class="nav-toggle" id="navToggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+</nav>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">AI-Powered · XGBoost · Runs in Browser</div>
+    <h1>Student Dropout<br><span>Risk Detector</span></h1>
+    <p class="subtitle">Enter a student's academic profile to instantly predict their dropout probability — no server, no data sent anywhere.</p>
+  </header>
+
+  <!-- BASIC INFO -->
+  <div class="card">
+    <div class="card-title">Basic Information</div>
+    <div class="grid">
+
+      <div class="field">
+        <label>Age at Enrollment <span id="age-val">20</span></label>
+        <input type="range" id="age" min="17" max="60" value="20" oninput="document.getElementById('age-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>Admission Grade <span id="admgrade-val">120</span></label>
+        <input type="range" id="admgrade" min="95" max="190" value="120" oninput="document.getElementById('admgrade-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>Scholarship Holder</label>
+        <div class="select-group">
+          <button class="select-btn" data-field="scholarship" data-val="0" onclick="toggleBtn(this)">No</button>
+          <button class="select-btn" data-field="scholarship" data-val="1" onclick="toggleBtn(this)">Yes</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tuition Fees Up to Date</label>
+        <div class="select-group">
+          <button class="select-btn active" data-field="tuition" data-val="1" onclick="toggleBtn(this)">Yes</button>
+          <button class="select-btn" data-field="tuition" data-val="0" onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Previous Qualification Grade <span id="prevgrade-val">130</span></label>
+        <input type="range" id="prevgrade" min="95" max="190" value="130" oninput="document.getElementById('prevgrade-val').textContent=this.value">
+      </div>
+      <div class="field">
+        <label>Course</label>
+        <label>Course Code <span id="course-val">9254</span></label>
+        <select id="course" oninput="document.getElementById('course-val').textContent=this.options[this.selectedIndex].value">
+          <option value="33">Biofuel Production Technologies</option>
+          <option value="171">Animation and Multimedia</option>
+          <option value="8014">Social Service (evening)</option>
+          <option value="9003">Agronomy</option>
+          <option value="9070">Communication Design</option>
+          <option value="9085">Veterinary Nursing</option>
+          <option value="9119" selected>Informatics Engineering</option>
+          <option value="9130">Equinculture</option>
+          <option value="9147">Management</option>
+          <option value="9238">Social Service</option>
+          <option value="9254">Tourism</option>
+          <option value="9500">Nursing</option>
+          <option value="9556">Oral Hygiene</option>
+          <option value="9670">Advertising & Marketing Management</option>
+          <option value="9773">Journalism & Communication</option>
+          <option value="9853">Basic Education</option>
+          <option value="9991">Management (evening)</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ACADEMIC PERFORMANCE -->
+  <div class="card">
+    <div class="card-title">Academic Performance</div>
+    <div class="grid">
+
+      <div class="field">
+        <label>Average Grade (0–20) <span id="avggrade-val">12.0</span></label>
+        <input type="range" id="avggrade" min="0" max="20" step="0.1" value="12" oninput="document.getElementById('avggrade-val').textContent=parseFloat(this.value).toFixed(1)">
+      </div>
+
+      <div class="field">
+        <label>Approval Rate (0–1) <span id="apprate-val">0.70</span></label>
+        <input type="range" id="apprate" min="0" max="1" step="0.01" value="0.70" oninput="document.getElementById('apprate-val').textContent=parseFloat(this.value).toFixed(2)">
+      </div>
+
+      <div class="field">
+        <label>Total Units Approved <span id="totapproved-val">10</span></label>
+        <input type="range" id="totapproved" min="0" max="20" value="10" oninput="document.getElementById('totapproved-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>1st Sem Units Approved <span id="s1approved-val">5</span></label>
+        <input type="range" id="s1approved" min="0" max="12" value="5" oninput="document.getElementById('s1approved-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>2nd Sem Units Approved <span id="s2approved-val">5</span></label>
+        <input type="range" id="s2approved" min="0" max="12" value="5" oninput="document.getElementById('s2approved-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>1st Sem Grade <span id="s1grade-val">12.0</span></label>
+        <input type="range" id="s1grade" min="0" max="20" step="0.1" value="12" oninput="document.getElementById('s1grade-val').textContent=parseFloat(this.value).toFixed(1)">
+      </div>
+
+      <div class="field">
+        <label>2nd Sem Grade <span id="s2grade-val">12.0</span></label>
+        <input type="range" id="s2grade" min="0" max="20" step="0.1" value="12" oninput="document.getElementById('s2grade-val').textContent=parseFloat(this.value).toFixed(1)">
+      </div>
+
+      <div class="field">
+        <label>1st Sem Evaluations <span id="s1eval-val">6</span></label>
+        <input type="range" id="s1eval" min="0" max="45" value="6" oninput="document.getElementById('s1eval-val').textContent=this.value">
+      </div>
+
+      <div class="field">
+        <label>2nd Sem Evaluations <span id="s2eval-val">6</span></label>
+        <input type="range" id="s2eval" min="0" max="45" value="6" oninput="document.getElementById('s2eval-val').textContent=this.value">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FAMILY BACKGROUND -->
+  <div class="card">
+    <div class="card-title">Family Background</div>
+    <div class="grid">
+      <div class="field">
+        <label>Mother's Occupation Code <span id="mocc-val">0</span></label>
+        <input type="range" id="mocc" min="0" max="194" value="0" oninput="document.getElementById('mocc-val').textContent=this.value">
+      </div>
+      <div class="field">
+        <label>Father's Occupation Code <span id="focc-val">0</span></label>
+        <input type="range" id="focc" min="0" max="194" value="0" oninput="document.getElementById('focc-val').textContent=this.value">
+      </div>
+    </div>
+  </div>
+
+  <!-- PREDICT BUTTON -->
+  <button class="predict-btn" onclick="predict()">⟶ &nbsp; Predict Dropout Risk</button>
+
+  <!-- RESULT PANEL -->
+  <div class="card" id="result-panel">
+    <div class="card-title">Prediction Result</div>
+
+    <div class="risk-display">
+      <!-- CIRCLE GAUGE -->
+      <div class="risk-circle">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle class="track" cx="65" cy="65" r="54" fill="none" stroke-width="10"/>
+          <circle class="fill" id="circle-fill" cx="65" cy="65" r="54" fill="none" stroke-width="10" stroke="var(--accent)"/>
+        </svg>
+        <div class="label">
+          <div class="risk-pct" id="pct-label">—</div>
+          <div class="risk-word" id="word-label">—</div>
+        </div>
+      </div>
+
+      <div class="risk-info">
+        <div class="risk-level-badge" id="level-badge">—</div>
+        <div class="risk-message" id="risk-message">Run a prediction to see the result.</div>
+      </div>
+    </div>
+
+    <!-- BAR GAUGE -->
+    <div class="gauge-bar-wrap">
+      <div class="gauge-bar-label">
+        <span>0% — Safe</span>
+        <span>35% — Watch</span>
+        <span>60% — At-Risk</span>
+        <span>100%</span>
+      </div>
+      <div class="gauge-bar-track">
+        <div class="gauge-bar-fill" id="bar-fill"></div>
+      </div>
+      <div class="zones">
+        <div class="zone low"></div>
+        <div class="zone mid"></div>
+        <div class="zone high"></div>
+      </div>
+    </div>
+
+    <!-- TOP FACTORS -->
+    <div class="rec-title" style="margin-bottom:14px">Key Risk Factors</div>
+    <div id="factors-list" class="factors"></div>
+
+    <!-- RECOMMENDATIONS -->
+    <div class="recommendations">
+      <div class="rec-title">Recommended Actions</div>
+      <div id="rec-list"></div>
+    </div>
+  </div>
+
+  <footer>Built with XGBoost · Model runs entirely in your browser · No data is sent to any server<br><br>
+  <span style="opacity:0.5">Student Dropout Risk Detector &nbsp;·&nbsp; Academic Early Warning System</span>
+  </footer>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// EMBEDDED XGBoost MODEL (compact JSON format)
+// ═══════════════════════════════════════════════
+const MODEL = {"trees":[{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,4,4,1,3,0,0,0,0,0,0,0,0,0],"sc":[0.59090906,8014.0,1.0,1.0,2.0,12.716666,0.72727275,0.19724183,0.0030869867,0.26862267,0.11097472,0.19972503,0.027030885,-0.024450617,-0.11411839],"bw":[-1.936148e-08,1.9050753,-0.906026,0.33858627,2.1418176,1.3875082,-1.0271673,0.19724183,0.0030869867,0.26862267,0.11097472,0.19972503,0.027030885,-0.024450617,-0.11411839],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,8,4,4,15,5,0,0,0,0,0,0,0,0,0],"sc":[0.6363636,25.0,1.0,1.0,122.0,12.91,0.79310346,0.22708915,0.08023367,0.22749875,-0.060371,0.17159821,0.009525952,-0.05648582,-0.113135934],"bw":[-0.0030237485,1.525064,-0.9028792,1.0953218,2.2257874,1.0766113,-1.0015175,0.22708915,0.08023367,0.22749875,-0.060371,0.17159821,0.009525952,-0.05648582,-0.113135934],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,0,4,11,4,0,0,0,0,0,0,0,0,0,0],"sc":[0.6363636,0.45454547,1.0,8014.0,1.0,0.7037037,0.76,0.019434854,0.19163993,0.1894878,0.013449942,0.19252612,0.038700435,-0.04024441,-0.104504064],"bw":[-0.0047546993,1.3251654,-0.84731776,1.639407,0.5110263,0.9515665,-0.9430877,0.019434854,0.19163993,0.1894878,0.013449942,0.19252612,0.038700435,-0.04024441,-0.104504064],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,0,4,11,4,10,0,0,0,0,0,0,0,0,0],"sc":[0.6363636,0.45454547,1.0,8014.0,1.0,137.0,0.79310346,0.017445117,0.16851856,0.16684918,0.012080043,0.13053796,-0.008951983,-0.047395438,-0.101915956],"bw":[-0.0056542507,1.1727343,-0.7962377,1.4455956,0.45782858,0.8503639,-0.8893609,0.017445117,0.16851856,0.16684918,0.012080043,0.13053796,-0.008951983,-0.047395438,-0.101915956],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,0,4,11,4,10,11,0,0,0,0,0,0,0,0],"sc":[0.72727275,0.45454547,1.0,8014.0,1.0,135.0,9773.0,0.01567044,0.15096897,0.15589784,-0.0013890421,0.0820475,-0.0591741,-0.10030537,-0.050919145],"bw":[-0.006157723,0.91191685,-0.86465067,1.2950988,0.29296625,0.29867727,-0.9156731,0.01567044,0.15096897,0.15589784,-0.0013890421,0.0820475,-0.0591741,-0.10030537,-0.050919145],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,8,4,1,15,10,15,0,0,0,0,0,0,0,0],"sc":[0.65384614,25.0,1.0,2.0,122.0,136.0,1.0,0.098413944,0.006738615,0.1488655,-0.07507324,0.09941766,-0.028926551,0.055316277,-0.085366614],"bw":[-0.006485358,0.91085863,-0.74268633,0.5859041,1.4506217,0.58701646,-0.8230264,0.098413944,0.006738615,0.1488655,-0.07507324,0.09941766,-0.028926551,0.055316277,-0.085366614],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,4,13,1,10,11,0,0,0,0,0,0,0,0],"sc":[0.72727275,1.0,1.0,18.0,2.0,135.0,9773.0,0.1555806,-0.0106944395,0.09349256,0.0028770443,0.06405004,-0.05294109,-0.09178836,-0.04104459],"bw":[-0.006620924,0.7530777,-0.7775793,1.5257221,0.50039905,0.21822056,-0.8257686,0.1555806,-0.0106944395,0.09349256,0.0028770443,0.06405004,-0.05294109,-0.09178836,-0.04104459],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,4,13,0,8,11,0,0,0,0,0,0,0,0],"sc":[0.72727275,1.0,1.0,18.0,0.53846157,27.0,9773.0,0.14410912,-0.010049147,0.074440144,-0.013187498,-0.014355845,0.11086915,-0.087568134,-0.037923463],"bw":[-0.00668216,0.68489605,-0.7359396,1.4124339,0.4522869,0.1974877,-0.78319347,0.14410912,-0.010049147,0.074440144,-0.013187498,-0.014355845,0.11086915,-0.087568134,-0.037923463],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,8,4,1,15,5,11,0,0,0,0,0,0,0,0],"sc":[0.72727275,23.0,1.0,3.0,122.0,12.91,9773.0,0.06055482,-0.02130561,0.11445179,-0.10508503,0.0713084,-0.03420303,-0.08353477,-0.034993704],"bw":[-0.0065464643,0.62494624,-0.6957651,0.28811318,1.0884256,0.18351915,-0.7424634,0.06055482,-0.02130561,0.11445179,-0.10508503,0.0713084,-0.03420303,-0.08353477,-0.034993704],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,8,13,5,2,0,0,0,0,0,0,0,0,0],"sc":[0.72727275,1.0,24.0,18.0,10.25,12.0,0.9047619,0.1300975,-0.013074669,0.07281568,-0.0009935797,-0.0518593,-0.08921754,0.010933072,-0.06980372],"bw":[-0.006747336,0.5689961,-0.65750116,1.2724282,0.35473815,-0.7605682,-0.26994413,0.1300975,-0.013074669,0.07281568,-0.0009935797,-0.0518593,-0.08921754,0.010933072,-0.06980372],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,4,10,1,3,0,0,0,0,0,0,0,0,0],"sc":[0.59090906,8014.0,1.0,133.8,1.0,12.716666,0.79310346,0.038886324,-0.07346894,0.11960925,0.036088448,0.084574185,-0.008919298,-0.02202235,-0.07386971],"bw":[-0.0066466182,0.66217214,-0.49181557,-0.27561015,0.81916225,0.51445,-0.57593465,0.038886324,-0.07346894,0.11960925,0.036088448,0.084574185,-0.008919298,-0.02202235,-0.07386971],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,11,13,8,15,0,0,0,0,0,0,0,0,0],"sc":[0.72727275,1.0,9773.0,18.0,23.0,1.0,0.8695652,0.11881932,-0.015941631,0.0013399752,0.0757069,0.06821894,-0.07184185,0.036904935,-0.062143117],"bw":[-0.006194789,0.4808633,-0.58572507,1.1588566,0.28569347,-0.68735516,-0.18910582,0.11881932,-0.015941631,0.0013399752,0.0757069,0.06821894,-0.07184185,0.036904935,-0.062143117],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,4,9,1,8,0,0,0,0,0,0,0,0,0],"sc":[0.59090906,8014.0,1.0,136.2,1.0,25.0,0.9047619,0.022266818,-0.081405275,0.10968349,0.028630985,0.012662353,0.108308636,-0.032781657,-0.078889176],"bw":[-0.0057785525,0.57165104,-0.4365508,-0.27313477,0.7186788,0.46258157,-0.51483834,0.022266818,-0.081405275,0.10968349,0.028630985,0.012662353,0.108308636,-0.032781657,-0.078889176],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,4,8,1,3,8,0,0,0,0,0,0,0,0],"sc":[0.53846157,8014.0,1.0,25.0,1.0,13.533334,23.0,-0.04023912,0.11722652,0.103831805,0.035010427,0.07394432,-0.030292723,-0.0593733,-0.004678713],"bw":[-0.0052721323,0.59881806,-0.362821,-0.24854355,0.77770203,0.5708653,-0.45566985,-0.04023912,0.11722652,0.103831805,0.035010427,0.07394432,-0.030292723,-0.0593733,-0.004678713],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,8,1,4,15,11,15,0,0,0,0,0,0,0,0],"sc":[0.76,23.0,6.0,1.0,122.0,9119.0,4.0,0.08578433,-0.0045665987,0.083330564,-0.11478831,-0.06760743,-0.008493342,-0.032327436,-0.07477233],"bw":[-0.0044992333,0.36276448,-0.5331262,0.08982332,0.7747793,-0.23505239,-0.66856253,0.08578433,-0.0045665987,0.083330564,-0.11478831,-0.06760743,-0.008493342,-0.032327436,-0.07477233],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,4,9,1,8,0,0,0,0,0,0,0,0,0],"sc":[0.53846157,8014.0,1.0,136.2,1.0,25.0,0.9047619,0.020906767,-0.072835386,0.09630593,0.028530935,0.022571474,0.103116,-0.023989895,-0.07071288],"bw":[-0.004636798,0.5276789,-0.3212527,-0.23651147,0.6968326,0.50618106,-0.40520045,0.020906767,-0.072835386,0.09630593,0.028530935,0.022571474,0.103116,-0.023989895,-0.07071288],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,1,6,8,11,15,0,0,0,0,0,0,0,0],"sc":[0.76,1.0,6.0,8.0,23.0,9119.0,4.0,0.10023721,-0.024334138,-0.0053494996,0.053840686,-0.06291502,-0.0049392255,-0.026129607,-0.06917552],"bw":[-0.0040656854,0.31064737,-0.47472236,0.9576528,0.1561296,-0.19249156,-0.6091467,0.10023721,-0.024334138,-0.0053494996,0.053840686,-0.06291502,-0.0049392255,-0.026129607,-0.06917552],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,8,9,15,11,0,0,0,0,0,0,0,0,0],"sc":[3.0,8014.0,23.0,136.2,122.0,9670.0,0.9047619,0.01722442,-0.07127827,0.07347021,-0.12715751,-0.055113792,-0.010997582,0.03371145,-0.04787777],"bw":[-0.003919349,0.4945659,-0.27124944,-0.24392551,0.6789651,-0.43755168,0.13584763,0.01722442,-0.07127827,0.07347021,-0.12715751,-0.055113792,-0.010997582,0.03371145,-0.04787777],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[5,11,8,8,3,4,0,0,0,0,0,0,0,0,0],"sc":[11.166667,9254.0,23.0,25.0,11.905714,1.0,0.85,-0.003296662,0.0664978,0.09234517,-0.03604809,0.022410946,-0.04982275,0.034453284,-0.04192638],"bw":[-0.004050131,0.4349727,-0.26742262,0.17884335,0.87539274,-0.4415302,0.13437057,-0.003296662,0.0664978,0.09234517,-0.03604809,0.022410946,-0.04982275,0.034453284,-0.04192638],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,15,9,11,11,11,0,0,0,0,0,0,0,0],"sc":[0.59090906,1.0,1.0,136.5,9254.0,9238.0,9670.0,0.1108817,0.03281312,-0.0007727478,0.06326167,0.16951804,0.0014315884,-0.046060633,0.0031234792],"bw":[-0.0036594647,0.36013958,-0.2840235,0.9637167,0.20533541,0.87251914,-0.31934547,0.1108817,0.03281312,-0.0007727478,0.06326167,0.16951804,0.0014315884,-0.046060633,0.0031234792],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,4,1,6,15,5,9,0,0,0,0,0,0,0,0],"sc":[0.76,1.0,6.0,8.0,125.0,15.023529,121.1,0.08906216,-0.023725832,0.015010257,-0.13129242,-0.017361872,0.09521022,-0.08060758,-0.039352052],"bw":[-0.002652905,0.2373361,-0.37913474,0.8433915,0.10788542,-0.10892259,-0.51588607,0.08906216,-0.023725832,0.015010257,-0.13129242,-0.017361872,0.09521022,-0.08060758,-0.039352052],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,4,10,13,10,15,0,0,0,0,0,0,0,0],"sc":[2.0,8014.0,1.0,133.0,4.0,138.0,1.0,0.0300543,-0.055089172,0.12269235,0.05010754,0.07451963,-0.018730115,0.08711909,-0.029845444],"bw":[-0.002730671,0.45945665,-0.18185759,-0.26236343,0.7162246,0.49405465,-0.26168033,0.0300543,-0.055089172,0.12269235,0.05010754,0.07451963,-0.018730115,0.08711909,-0.029845444],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[5,11,8,8,3,2,0,0,0,0,0,0,0,0,0],"sc":[11.166667,9254.0,23.0,19.0,11.905714,12.0,0.85,-0.04673495,0.026191508,0.08025771,-0.039233178,-0.022479383,-0.056268927,0.032707453,-0.033794574],"bw":[-0.0017415972,0.34405467,-0.20926125,0.11773281,0.75345355,-0.37287727,0.15240256,-0.04673495,0.026191508,0.08025771,-0.039233178,-0.022479383,-0.056268927,0.032707453,-0.033794574],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,4,9,13,10,13,0,0,0,0,0,0,0,0],"sc":[2.0,8014.0,1.0,136.2,4.0,138.0,10.0,0.011775327,-0.0636303,0.11829183,0.04372353,0.06923124,-0.016607111,-0.038190484,0.0005725091],"bw":[-0.0018568572,0.40713412,-0.15705694,-0.24015129,0.6511985,0.45796686,-0.22995028,0.011775327,-0.0636303,0.11829183,0.04372353,0.06923124,-0.016607111,-0.038190484,0.0005725091],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,3,15,9,8,10,0,0,0,0,0,0,0,0,0],"sc":[1.0,12.311875,1.0,136.2,27.0,116.0,0.79310346,0.09260051,0.031347554,-0.017647423,0.08427253,-0.03669281,0.107994296,0.0014307785,-0.040582668],"bw":[-0.0012656449,0.61482763,-0.093223624,0.8076691,0.085201934,0.926945,-0.13720115,0.09260051,0.031347554,-0.017647423,0.08427253,-0.03669281,0.107994296,0.0014307785,-0.040582668],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,8,4,13,11,12,0,0,0,0,0,0,0,0],"sc":[2.0,8014.0,23.0,1.0,4.0,9773.0,99.0,0.063568085,-0.036888473,0.11517753,0.038670313,-0.035939496,0.012160893,0.020678299,-0.10437709],"bw":[-0.0006513802,0.36397085,-0.13708183,-0.2313192,0.5992274,-0.2706872,0.15312728,0.063568085,-0.036888473,0.11517753,0.038670313,-0.035939496,0.012160893,0.020678299,-0.10437709],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,3,0,11,8,15,9,0,0,0,0,0,0,0,0],"sc":[1.0,12.311875,0.9047619,9254.0,27.0,125.0,126.3,0.051312298,0.10528727,-0.014347575,0.0784656,0.0049006674,-0.12600532,-0.0840021,-0.020868115],"bw":[-0.00032693244,0.5703542,-0.08325307,0.7551103,0.09097733,0.014576814,-0.47829226,0.051312298,0.10528727,-0.014347575,0.0784656,0.0049006674,-0.12600532,-0.0840021,-0.020868115],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[3,11,8,8,15,7,0,0,0,0,0,0,0,0,0],"sc":[11.675,9254.0,27.0,25.0,99.0,15.714286,0.84615386,-0.014406559,0.042864077,0.06482537,-0.08051455,-0.029634068,0.08997678,0.044138983,-0.027856147],"bw":[-0.00040265013,0.21969803,-0.18707865,0.0073076184,0.6145278,-0.27437913,0.17869055,-0.014406559,0.042864077,0.06482537,-0.08051455,-0.029634068,0.08997678,0.044138983,-0.027856147],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,15,14,2,10,15,0,0,0,0,0,0,0,0],"sc":[1.0,19.0,1.0,9.0,11.0,116.0,125.0,0.02717934,-0.09905665,0.07935207,0.0040665832,-0.036945023,0.097620524,-0.008821688,-0.118408],"bw":[-0.00020652812,0.53464377,-0.07561047,-0.09188068,0.6534142,0.8304932,-0.11518072,0.02717934,-0.09905665,0.07935207,0.0040665832,-0.036945023,0.097620524,-0.008821688,-0.118408],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,11,11,8,13,15,5,0,0,0,0,0,0,0,0],"sc":[0.45454547,8014.0,9556.0,25.0,4.0,1.0,13.78,-0.031398457,0.09126511,0.10719817,0.028164336,0.09591386,-0.029161427,0.030678151,-0.06749342],"bw":[-0.00020699968,0.28212276,-0.12696807,-0.19494995,0.45073834,-0.25025606,0.14850968,-0.031398457,0.09126511,0.10719817,0.028164336,0.09591386,-0.029161427,0.030678151,-0.06749342],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,0,5,10,6,9,0,0,0,0,0,0,0,0],"sc":[1.0,28.0,0.9047619,13.333333,138.6,13.0,126.3,0.045468133,-0.037966505,0.11074535,0.029686814,-0.00088443886,0.1679006,-0.08016227,-0.015000708],"bw":[0.00034947615,0.49760595,-0.06796368,0.3012126,0.9331546,0.014335365,-0.41973355,0.045468133,-0.037966505,0.11074535,0.029686814,-0.00088443886,0.1679006,-0.08016227,-0.015000708],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,12,9,13,11,0,0,0,0,0,0,0],"sc":[2.0,9130.0,101.0,117.0,8.0,9556.0,-0.11431109,0.066330664,-0.017459674,0.093327396,0.014504253,-0.018541712,0.01705878],"bw":[0.0007288327,0.28733534,-0.10219551,-0.022644546,0.6399022,-0.07634056,-0.11431109,0.066330664,-0.017459674,0.093327396,0.014504253,-0.018541712,0.01705878],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,15,9,10,10,15,0,0,0,0,0,0,0,0],"sc":[1.0,28.0,1.0,129.6,138.6,116.0,125.0,0.051575094,-0.016678898,0.108516894,0.027047975,-0.037981972,0.08270683,-0.0070862654,-0.11311264],"bw":[0.0008989122,0.46397877,-0.061156277,0.27626586,0.900529,0.69236493,-0.09492973,0.051575094,-0.016678898,0.108516894,0.027047975,-0.037981972,0.08270683,-0.0070862654,-0.11311264],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[8,2,0,11,12,15,11,0,0,0,0,0,0,0,0],"sc":[25.0,12.0,0.54545456,9119.0,2.0,122.0,9070.0,-0.028874934,0.013294468,0.06715428,-0.041495163,0.06383823,-0.08466681,-0.05003735,0.02353487],"bw":[0.0011253792,-0.0986419,0.2698424,-0.0033502337,-0.3661466,0.57078713,0.05029298,-0.028874934,0.013294468,0.06715428,-0.041495163,0.06383823,-0.08466681,-0.05003735,0.02353487],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,15,14,10,0,15,0,0,0,0,0,0,0,0],"sc":[1.0,19.0,125.0,9.0,107.0,0.9047619,193.0,0.0203946,-0.094169766,-0.06763425,0.060760368,0.0039594336,-0.035974223,-0.122709095,-0.025788022],"bw":[0.0008767047,0.43026593,-0.05518801,-0.14464317,0.5522927,-0.033543177,-1.0688341,0.0203946,-0.094169766,-0.06763425,0.060760368,0.0039594336,-0.035974223,-0.122709095,-0.025788022],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,15,9,13,11,0,0,0,0,0,0,0],"sc":[1.0,8014.0,122.0,136.2,5.0,9853.0,-0.117528036,0.014081773,-0.05253708,0.10338177,0.031021288,-0.011596843,0.031112824],"bw":[0.00011545644,0.28207687,-0.08065984,-0.17151739,0.54480094,-0.055885796,-0.117528036,0.014081773,-0.05253708,0.10338177,0.031021288,-0.011596843,0.031112824],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[8,5,0,11,7,10,15,0,0,0,0,0,0,0,0],"sc":[25.0,11.4,0.54545456,9254.0,15.714286,154.4,6.0,-0.010747953,0.049256947,-0.022568515,0.10513306,0.05939753,-0.05736022,0.041403256,-0.020240566],"bw":[0.00019063998,-0.08662624,0.23624901,0.08341114,-0.2017257,0.51826656,0.043247715,-0.010747953,0.049256947,-0.022568515,0.10513306,0.05939753,-0.05736022,0.041403256,-0.020240566],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,8,12,5,0,0,0,0,0,0,0],"sc":[125.0,23.0,193.0,11.166667,0.27272728,-0.1240119,-0.021979732,0.011147374,-0.018953016,0.056413192,0.01139501],"bw":[0.0005531959,0.020013073,-1.0222942,-0.078573346,0.22186524,-0.1240119,-0.021979732,0.011147374,-0.018953016,0.056413192,0.01139501],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,15,9,10,10,11,0,0,0,0,0,0,0,0],"sc":[1.0,28.0,1.0,129.6,138.6,116.0,9556.0,0.045577165,-0.01820248,0.104541436,0.014399568,-0.03802171,0.073894046,-0.01569405,0.013129155],"bw":[0.00027857497,0.38909265,-0.049549293,0.2257079,0.8201064,0.6100628,-0.07923937,0.045577165,-0.01820248,0.104541436,0.014399568,-0.03802171,0.073894046,-0.01569405,0.013129155],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,0,12,11,9,0,0,0,0,0,0],"sc":[125.0,0.7096774,193.0,9254.0,119.6,-0.12005831,-0.020257493,0.0014219957,0.03533036,-0.04575717,-0.002884357],"bw":[0.00078209845,0.018852284,-0.97801536,0.13324313,-0.13786541,-0.12005831,-0.020257493,0.0014219957,0.03533036,-0.04575717,-0.002884357],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,15,14,10,11,15,0,0,0,0,0,0,0,0],"sc":[1.0,28.0,1.0,10.0,138.6,9238.0,125.0,0.042538714,-0.02327728,0.10239142,0.012982336,0.09414807,0.014691882,-0.0055221017,-0.093963616],"bw":[0.0002241186,0.3607253,-0.045008156,0.2051017,0.7890171,0.55147135,-0.0719108,0.042538714,-0.02327728,0.10239142,0.012982336,0.09414807,0.014691882,-0.0055221017,-0.093963616],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,6,9,4,12,7,9,0,0,0,0,0,0,0,0],"sc":[0.92,13.0,126.2,1.0,3.0,11.983334,130.2,0.037944116,-0.0014919349,0.20576468,0.059620168,-0.014319124,-0.096057706,0.052039064,-0.019995656],"bw":[0.00063356524,0.04951809,-0.31248873,0.030922076,1.4260832,-0.80960643,0.0039659603,0.037944116,-0.0014919349,0.20576468,0.059620168,-0.014319124,-0.096057706,0.052039064,-0.019995656],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,1,12,11,2,0,0,0,0,0,0],"sc":[125.0,3.0,193.0,9130.0,6.0,-0.113909975,-0.014335719,-0.007358469,0.047895994,-0.10493018,-0.0022838004],"bw":[0.0009619246,0.016575636,-0.8996934,0.19124693,-0.068510145,-0.113909975,-0.014335719,-0.007358469,0.047895994,-0.10493018,-0.0022838004],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,6,9,10,13,7,5,0,0,0,0,0,0,0,0],"sc":[0.92,13.0,126.2,110.0,17.0,11.983334,15.6,-0.061275523,0.005090106,0.16581218,0.034452416,-0.0130335605,-0.09431001,-0.009610915,0.08606635],"bw":[0.0004257518,0.044711817,-0.28893083,0.027083771,1.2896756,-0.7839238,0.006544667,-0.061275523,0.005090106,0.16581218,0.034452416,-0.0130335605,-0.09431001,-0.009610915,0.08606635],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,8,14,12,0,0,0,0,0,0,0],"sc":[125.0,23.0,7.0,90.0,0.27272728,-0.008935842,-0.108317785,-0.008572858,0.08700669,0.04956882,0.009352352],"bw":[0.00046076693,0.01496609,-0.86265653,-0.06727357,0.18414952,-0.008935842,-0.108317785,-0.008572858,0.08700669,0.04956882,0.009352352],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,12,14,10,15,12,0,0,0,0,0,0,0,0],"sc":[1.0,19.0,5.0,9.0,107.0,9.0,7.0,0.012844241,-0.09300532,-0.071614265,0.04915429,0.024425915,-0.031094128,-0.037724484,-0.0024715026],"bw":[0.0004768281,0.30644464,-0.03670798,-0.21268077,0.43128103,0.14185277,-0.11504398,0.012844241,-0.09300532,-0.071614265,0.04915429,0.024425915,-0.031094128,-0.037724484,-0.0024715026],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,0,12,8,15,0,0,0,0,0,0],"sc":[125.0,0.7096774,193.0,21.0,6.0,-0.10773676,-0.010897505,-0.0035676826,0.025509372,0.0062405914,-0.030664846],"bw":[3.8188497e-05,0.013561428,-0.83180773,0.10618776,-0.11431396,-0.10773676,-0.010897505,-0.0035676826,0.025509372,0.0062405914,-0.030664846],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[15,1,11,9,2,10,5,0,0,0,0,0,0,0,0],"sc":[1.0,4.0,9556.0,130.2,9.0,106.0,14.0475,0.105987035,0.032374673,-0.08415177,0.043893836,-0.10869354,-0.0064080707,0.027608374,-0.09012485],"bw":[-0.0003607264,0.48795846,-0.02130565,0.91410923,0.14005592,-0.09013039,0.16342954,0.105987035,0.032374673,-0.08415177,0.043893836,-0.10869354,-0.0064080707,0.027608374,-0.09012485],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[1,11,15,10,13,13,0,0,0,0,0,0,0],"sc":[1.0,8014.0,122.0,133.0,5.0,9.0,-0.10426799,0.0254762,-0.037562165,0.09950506,0.017055215,-0.017398357,0.0078035654],"bw":[-0.00061669416,0.1941598,-0.053354595,-0.15865913,0.43010196,-0.03641323,-0.10426799,0.0254762,-0.037562165,0.09950506,0.017055215,-0.017398357,0.0078035654],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[8,7,11,3,9,0,8,0,0,0,0,0,0,0,0],"sc":[27.0,15.714286,9085.0,13.794642,154.1,0.54545456,43.0,-0.0018382106,-0.050348174,0.15047182,-0.026768927,0.04288601,-0.053527445,0.022523107,0.08537759],"bw":[-0.0005132479,-0.051396415,0.18652885,-0.06495559,0.96257854,-0.19073458,0.3258214,-0.0018382106,-0.050348174,0.15047182,-0.026768927,0.04288601,-0.053527445,0.022523107,0.08537759],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,10,8,0,0,0,0,0,0],"sc":[112.0,90.0,7.0,106.0,40.0,0.005107813,-0.105668105,-0.061000224,0.001133761,0.09593647,-0.01966765],"bw":[-0.00014678777,0.012428014,-0.761858,-0.0038391615,0.78105295,0.005107813,-0.105668105,-0.061000224,0.001133761,0.09593647,-0.01966765],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,11,9,10,0,13,0,0,0,0,0,0,0,0],"sc":[1.0,28.0,9070.0,129.6,138.6,0.84615386,4.0,0.037165068,-0.025631526,0.09906783,0.0020083955,-0.013725628,-0.08904165,0.110829614,-0.0032523915],"bw":[-0.00039880222,0.2767839,-0.03360491,0.13556433,0.71441007,-0.26939312,0.018010896,0.037165068,-0.025631526,0.09906783,0.0020083955,-0.013725628,-0.08904165,0.110829614,-0.0032523915],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[15,1,11,9,2,10,5,0,0,0,0,0,0,0,0],"sc":[1.0,4.0,9556.0,130.2,9.0,106.0,14.0475,0.10230762,0.028135935,-0.07925353,0.042841442,-0.10083286,-0.0056791403,0.024202798,-0.08698222],"bw":[7.560994e-05,0.4629239,-0.01952426,0.86912864,0.14962767,-0.080075584,0.14158526,0.10230762,0.028135935,-0.07925353,0.042841442,-0.10083286,-0.0056791403,0.024202798,-0.08698222],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,15,12,15,13,0,0,0,0,0,0],"sc":[125.0,90.0,193.0,1.0,11.0,-0.101046816,-0.00912093,0.013995699,-0.0068027684,0.09421099,-0.078128725],"bw":[-0.00020463514,0.011376858,-0.77237093,-0.0035730586,0.6438899,-0.101046816,-0.00912093,0.013995699,-0.0068027684,0.09421099,-0.078128725],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,8,14,0,0,0,0,0,0],"sc":[112.0,90.0,7.0,23.0,9.0,0.004159942,-0.10033929,-0.006849972,0.013577893,0.092160024,0.0006545151],"bw":[-0.0004470287,0.010730434,-0.71452475,-0.0031029007,0.67003137,0.004159942,-0.10033929,-0.006849972,0.013577893,0.092160024,0.0006545151],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,14,11,7,8,0,13,0,0,0,0,0,0,0,0],"sc":[1.0,10.0,9070.0,14.428572,25.0,0.84615386,4.0,0.05369016,-0.06600935,-0.042947657,0.054433685,-0.012150051,-0.08722704,0.10863971,-0.0030111955],"bw":[-0.00042721545,0.25720343,-0.030921627,0.44492382,-0.06911687,-0.24672922,0.015984528,0.05369016,-0.06600935,-0.042947657,0.054433685,-0.012150051,-0.08722704,0.10863971,-0.0030111955],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,10,12,0,12,0,0,0,0,0,0],"sc":[125.0,139.0,193.0,0.92,7.0,-0.095509596,-0.008582911,0.010997791,-0.029574826,-0.030365122,0.006480998],"bw":[-0.0002713225,0.010067635,-0.7282717,0.06468107,-0.12349177,-0.095509596,-0.008582911,0.010997791,-0.029574826,-0.030365122,0.006480998],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[12,15,12,9,0,5,1,0,0,0,0,0,0,0,0],"sc":[5.0,9.0,7.0,131.9,0.7083333,15.166667,4.0,0.037226256,-0.0068035717,0.005914783,-0.0879313,-0.035538975,0.12198558,0.022214267,-0.011495774],"bw":[-0.00071959186,0.13223132,-0.058769666,0.23107937,-0.30792767,-0.30720943,0.025567062,0.037226256,-0.0068035717,0.005914783,-0.0879313,-0.035538975,0.12198558,0.022214267,-0.011495774],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,8,14,7,8,0,0,0,0,0,0],"sc":[125.0,27.0,7.0,15.714286,32.0,-0.006982749,-0.09173162,-0.0047979117,0.091443725,0.046590846,-0.00061378063],"bw":[-0.0006542402,0.009134363,-0.705635,-0.034448057,0.17349675,-0.006982749,-0.09173162,-0.0047979117,0.091443725,0.046590846,-0.00061378063],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[15,11,11,0,11,3,5,0,0,0,0,0,0,0,0],"sc":[1.0,9003.0,9556.0,0.7586207,9238.0,15.0,14.0475,0.05474722,-0.085029505,0.1501559,0.009499789,-0.00989331,0.06618166,0.021840839,-0.08366248],"bw":[-0.0005394926,0.399583,-0.01739843,-0.21805805,0.58568084,-0.0723045,0.1280521,0.05474722,-0.085029505,0.1501559,0.009499789,-0.00989331,0.06618166,0.021840839,-0.08366248],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,8,14,13,10,11,0,0,0,0,0,0,0,0],"sc":[1.0,19.0,43.0,9.0,12.0,106.0,9070.0,0.0084557375,-0.08609041,0.05076207,-0.015535483,-0.067796536,-0.0031729557,-0.05795897,0.09252956],"bw":[-0.00023205951,0.23825417,-0.028224777,-0.23493135,0.3624803,-0.04650059,0.41686112,0.0084557375,-0.08609041,0.05076207,-0.015535483,-0.067796536,-0.0031729557,-0.05795897,0.09252956],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,-1,5,7,-1,-1,-1,-1],"rc":[2,4,-1,6,8,-1,-1,-1,-1],"si":[5,0,0,6,9,0,0,0,0],"sc":[16.6,0.9047619,0.11087903,13.0,126.2,0.0013337682,0.11247442,-0.057591062,0.0017111499],"bw":[-0.00041320082,-0.0065360195,0.11087903,0.030776858,-0.20251116,0.0013337682,0.11247442,-0.057591062,0.0017111499],"dl":[0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,12,0,0,0,0,0,0,0],"sc":[112.0,90.0,7.0,5.0,0.5555556,0.0034610673,-0.09418785,0.011823359,-0.0058728824,0.10022934,0.00607755],"bw":[-2.07882e-05,0.009619746,-0.6579613,-0.0036069115,0.6103458,0.0034610673,-0.09418785,0.011823359,-0.0058728824,0.10022934,0.00607755],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[10,1,11,3,2,9,7,0,0,0,0,0,0,0,0],"sc":[139.0,3.0,9130.0,13.533334,6.0,129.9,14.4,0.026651999,-0.09317996,-0.10344435,0.002919687,-0.08742302,-0.017865248,0.01369485,-0.073124],"bw":[3.114649e-05,0.05017224,-0.121967465,0.22362426,-0.027225142,-0.32495853,0.03522472,0.026651999,-0.09317996,-0.10344435,0.002919687,-0.08742302,-0.017865248,0.01369485,-0.073124],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,-1,5,7,-1,-1,-1,-1],"rc":[2,4,-1,6,8,-1,-1,-1,-1],"si":[5,10,0,11,10,0,0,0,0],"sc":[16.6,111.0,0.103176795,9773.0,116.0,-0.06442922,0.06148262,0.06045547,-0.0007836278],"bw":[-0.0009180549,-0.0068155723,0.103176795,-0.33850667,0.011628319,-0.06442922,0.06148262,0.06045547,-0.0007836278],"dl":[0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,15,12,15,13,0,0,0,0,0,0],"sc":[125.0,90.0,193.0,1.0,11.0,-0.0896476,-0.005235422,0.03652768,-0.0019500945,0.08091329,-0.05533404],"bw":[-0.0004304658,0.008378339,-0.66590977,-0.003722885,0.541959,-0.0896476,-0.005235422,0.03652768,-0.0019500945,0.08091329,-0.05533404],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,0,0,9,9,6,13,0,0,0,0,0,0,0,0],"sc":[1.0,0.7037037,0.9411765,138.3,122.3,13.0,9.0,0.058691293,-0.032106306,-0.070194684,0.013747612,-0.0027762284,0.08867578,-0.018580459,-0.0830545],"bw":[-0.0004985864,0.21960571,-0.026041629,0.39794728,-0.10284132,-0.012863275,-0.6236532,0.058691293,-0.032106306,-0.070194684,0.013747612,-0.0027762284,0.08867578,-0.018580459,-0.0830545],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,-1,5,7,-1,-1,-1,-1],"rc":[2,4,-1,6,8,-1,-1,-1,-1],"si":[5,8,0,10,11,0,0,0,0],"sc":[16.6,43.0,0.09544306,106.0,9238.0,-0.0662395,-0.00065216894,-0.027361304,0.1053157],"bw":[-0.00055920624,-0.006197682,0.09544306,-0.021132488,0.36948416,-0.0662395,-0.00065216894,-0.027361304,0.1053157],"dl":[0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,8,9,0,0,0,0,0,0],"sc":[112.0,9.0,7.0,43.0,162.5,0.00486517,-0.0907896,-0.006969727,0.06649638,0.015514064,-0.10732132],"bw":[-0.00024148246,0.008437467,-0.6214497,-0.043125886,0.12781069,0.00486517,-0.0907896,-0.006969727,0.06649638,0.015514064,-0.10732132],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[12,15,1,9,0,13,6,0,0,0,0,0,0,0,0],"sc":[5.0,9.0,4.0,133.0,0.7083333,14.0,4.0,0.032532394,-0.008065592,0.004747039,-0.08641798,0.01618812,-0.047458682,-0.065955006,-0.010314037],"bw":[-0.0005910687,0.1097356,-0.049182035,0.2006638,-0.30243567,0.10286178,-0.16043271,0.032532394,-0.008065592,0.004747039,-0.08641798,0.01618812,-0.047458682,-0.065955006,-0.010314037],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[11,13,6,12,3,7,0,0,0,0,0,0,0,0,0],"sc":[9853.0,17.0,9.0,5.0,12.904762,13.7,0.8695652,0.012686073,-0.006891063,-0.08952241,0.079786584,0.019037671,-0.07938626,0.15785165,0.0007420685],"bw":[-0.0010932847,-0.028482694,0.1836599,-0.008325527,-0.5734368,0.09685361,1.0941269,0.012686073,-0.006891063,-0.08952241,0.079786584,0.019037671,-0.07938626,0.15785165,0.0007420685],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[4,8,11,14,10,0,13,0,0,0,0,0,0,0,0],"sc":[1.0,19.0,9070.0,9.0,135.0,0.84615386,4.0,0.008099349,-0.08413879,0.050600957,-0.0059139216,-0.010111921,-0.08345432,0.10536554,-0.002499512],"bw":[-0.0007928976,0.2040379,-0.024237985,-0.23510522,0.32388374,-0.21191177,0.016243435,0.008099349,-0.08413879,0.050600957,-0.0059139216,-0.010111921,-0.08345432,0.10536554,-0.002499512],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,15,12,13,13,0,0,0,0,0,0],"sc":[125.0,90.0,193.0,9.0,11.0,-0.08516009,-0.0055377,-0.007910782,0.008023673,0.075281024,-0.05170964],"bw":[-0.0006923103,0.0072504645,-0.63295126,-0.0038711405,0.50307477,-0.08516009,-0.0055377,-0.007910782,0.008023673,0.075281024,-0.05170964],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,-1,5,7,-1,-1,-1,-1],"rc":[2,4,-1,6,8,-1,-1,-1,-1],"si":[5,10,0,11,10,0,0,0,0],"sc":[16.6,111.0,0.08982323,9773.0,116.0,-0.059008915,0.055886723,0.054944422,-0.0008060938],"bw":[-0.00083290023,-0.0063117337,0.08982323,-0.30362132,0.010015595,-0.059008915,0.055886723,0.054944422,-0.0008060938],"dl":[0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,8,9,0,0,0,0,0,0],"sc":[112.0,9.0,7.0,43.0,162.5,0.003289597,-0.086669326,-0.0066555436,0.061398637,0.014737568,-0.10244862],"bw":[-0.0003932914,0.0074683484,-0.5910715,-0.041914996,0.121756084,0.003289597,-0.086669326,-0.0066555436,0.061398637,0.014737568,-0.10244862],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[3,7,10,7,9,9,0,0,0,0,0,0,0],"sc":[14.816667,13.937143,158.0,13.625,128.0,150.0,-0.07480011,-0.0007182399,0.051500697,-0.07272088,-0.0065025548,0.021308856,0.18487382],"bw":[-0.0007206495,-0.013592894,0.34106323,0.015168158,-0.3436133,0.6462483,-0.07480011,-0.0007182399,0.051500697,-0.07272088,-0.0065025548,0.021308856,0.18487382],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[10,6,11,3,3,10,11,0,0,0,0,0,0,0,0],"sc":[139.0,9.0,9130.0,12.084286,13.183333,148.0,9147.0,0.011505664,-0.013422991,0.015080297,0.14923947,-0.052907575,0.002651033,0.085825466,-0.005461432],"bw":[-0.000488876,0.041266963,-0.10213774,0.014017093,0.5099632,-0.2780216,0.03268675,0.011505664,-0.013422991,0.015080297,0.14923947,-0.052907575,0.002651033,0.085825466,-0.005461432],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[14,13,0,1,11,6,3,0,0,0,0,0,0,0,0],"sc":[10.0,9.0,0.9166667,6.0,9003.0,13.0,14.6625,0.004134346,-0.027579337,-0.054902554,0.033850588,-0.008139267,0.0879383,-0.084674224,0.022587279],"bw":[6.425797e-06,0.05031047,-0.085057996,-0.047476314,0.29689887,-0.043280266,-0.6906578,0.004134346,-0.027579337,-0.054902554,0.033850588,-0.008139267,0.0879383,-0.084674224,0.022587279],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[15,10,10,13,11,3,15,0,0,0,0,0,0,0,0],"sc":[1.0,132.0,161.0,8.0,9238.0,15.0,3.0,-0.065044634,0.03932422,0.09997531,0.019257043,-0.0016960528,0.05185647,0.058305364,-0.06928425],"bw":[-0.00021170694,0.32248494,-0.013526227,-0.026482018,0.6630318,-0.0016206632,-0.4342661,-0.065044634,0.03932422,0.09997531,0.019257043,-0.0016960528,0.05185647,0.058305364,-0.06928425],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[4,14,0,7,8,6,0,0,0,0,0,0,0],"sc":[1.0,10.0,0.94736844,14.428572,23.0,9.0,-0.078341365,0.04613462,-0.0636986,-0.051214438,0.04001857,-0.0033934035,0.048470076],"bw":[0.00014819324,0.19282435,-0.0217253,0.37229478,-0.10483925,-0.012637078,-0.078341365,0.04613462,-0.0636986,-0.051214438,0.04001857,-0.0033934035,0.048470076],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[12,15,12,0,0,8,9,0,0,0,0,0,0,0,0],"sc":[5.0,9.0,7.0,0.8333333,0.7083333,29.0,144.1,0.0070770504,0.049776442,0.0050692116,-0.084183306,-0.03792244,0.030277276,0.008524659,-0.04234376],"bw":[-3.9439023e-05,0.09576862,-0.042566694,0.17673594,-0.2799166,-0.26231208,0.032081038,0.0070770504,0.049776442,0.0050692116,-0.084183306,-0.03792244,0.030277276,0.008524659,-0.04234376],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,15,0,5,13,0,0,0,0,0,0],"sc":[125.0,90.0,0.06666667,16.6,11.0,-0.0022786367,-0.079330586,-0.00087154465,0.08074157,0.0686331,-0.047987442],"bw":[-0.0003700932,0.0066372794,-0.58701104,-0.0034200165,0.4585637,-0.0022786367,-0.079330586,-0.00087154465,0.08074157,0.0686331,-0.047987442],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[9,5,10,10,3,9,14,0,0,0,0,0,0,0,0],"sc":[127.2,10.25,130.0,143.0,11.2,141.8,8.0,0.03350241,-0.12875186,-0.04968873,-0.006484983,0.08479379,-0.020135304,-0.017856436,0.011707649],"bw":[-0.00029971031,-0.058339894,0.06846606,0.242639,-0.14196672,0.6110411,-0.015637904,0.03350241,-0.12875186,-0.04968873,-0.006484983,0.08479379,-0.020135304,-0.017856436,0.011707649],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,-1,9,11,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,-1,10,12,-1,-1,-1,-1,-1,-1],"si":[10,8,10,13,0,11,11,0,0,0,0,0,0],"sc":[106.0,40.0,121.0,11.0,0.067134105,9147.0,9119.0,-0.031851355,-0.11288023,0.059419777,-0.006718232,-0.017405394,0.0041543986],"bw":[-0.00055782706,-0.41358125,0.009307911,-0.7918336,0.067134105,0.16555047,-0.026451789,-0.031851355,-0.11288023,0.059419777,-0.006718232,-0.017405394,0.0041543986],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[12,12,13,0,9,0,0,0,0,0,0],"sc":[112.0,90.0,7.0,0.65384614,130.2,0.0032011387,-0.081631504,0.0059974743,-0.0069274553,0.011254084,0.098134935],"bw":[-0.00065506075,0.0062811025,-0.5487624,-0.0032408328,0.4801643,0.0032011387,-0.081631504,0.0059974743,-0.0069274553,0.011254084,0.098134935],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[11,13,11,13,3,3,10,0,0,0,0,0,0,0,0],"sc":[9853.0,17.0,9991.0,14.0,12.904762,11.866667,115.0,-0.0027568412,0.030796224,-0.08245254,0.07637792,0.10729336,-0.0048358133,0.07368266,-0.019351585],"bw":[-0.0005308458,-0.024016974,0.15663429,-0.0055565503,-0.52074146,0.43876132,-0.07048784,-0.0027568412,0.030796224,-0.08245254,0.07637792,0.10729336,-0.0048358133,0.07368266,-0.019351585],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[9,1,10,10,7,9,9,0,0,0,0,0,0,0,0],"sc":[127.2,2.0,130.0,111.0,11.2,141.8,129.3,-0.078403324,0.031312462,-0.047970887,-0.004072072,0.0758293,-0.019908091,0.04413525,-0.0055273823],"bw":[1.1784056e-05,-0.057058956,0.067271836,0.21664697,-0.13377805,0.54485756,-0.0077554947,-0.078403324,0.031312462,-0.047970887,-0.004072072,0.0758293,-0.019908091,0.04413525,-0.0055273823],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,-1,9,11,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,-1,10,12,-1,-1,-1,-1,-1,-1],"si":[10,8,10,13,0,11,11,0,0,0,0,0,0],"sc":[106.0,40.0,121.0,11.0,0.05917113,9147.0,9119.0,-0.028809173,-0.10748982,0.053845253,-0.0059368117,-0.016075397,0.003942778],"bw":[-3.3959663e-05,-0.3857166,0.009169217,-0.73616964,0.05917113,0.15227062,-0.02361609,-0.028809173,-0.10748982,0.053845253,-0.0059368117,-0.016075397,0.003942778],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[0,6,3,14,0,12,0,0,0,0,0,0,0],"sc":[0.9411765,13.0,14.535714,10.0,0.8372093,9.0,0.023599265,0.0052033025,-0.009527302,0.10051912,-0.014160066,-0.08158765,0.0077897534],"bw":[-0.00018746397,0.008273233,-0.41829678,-0.0008592972,0.5555659,-0.56742764,0.023599265,0.0052033025,-0.009527302,0.10051912,-0.014160066,-0.08158765,0.0077897534],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,-1,9,11,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,-1,10,12,-1,-1,-1,-1,-1,-1],"si":[4,9,9,5,0,0,10,0,0,0,0,0,0],"sc":[1.0,155.7,127.5,13.333333,0.1044625,0.88,130.0,0.0259843,-0.046864007,-0.003779807,-0.048483938,0.04769293,0.0001731793],"bw":[-0.00012166918,0.17558442,-0.019837828,0.10817059,0.1044625,-0.092073694,0.06766722,0.0259843,-0.046864007,-0.003779807,-0.048483938,0.04769293,0.0001731793],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,-1,-1,-1,-1,-1,-1],"si":[15,12,12,8,15,0,0,0,0,0,0],"sc":[125.0,9.0,193.0,43.0,3.0,-0.07692829,-0.00094516744,-0.0057208403,0.054162294,0.06225514,0.0049605872],"bw":[5.278604e-05,0.0063404506,-0.5470968,-0.035304822,0.10154445,-0.07692829,-0.00094516744,-0.0057208403,0.054162294,0.06225514,0.0049605872],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[12,15,12,2,0,5,9,0,0,0,0,0,0,0,0],"sc":[5.0,9.0,7.0,11.0,0.7083333,15.166667,144.1,0.0038235446,0.041060787,0.0049278466,-0.081919044,-0.028299747,0.10402324,0.007430988,-0.038381826],"bw":[0.0001266117,0.08793672,-0.039079133,0.16184606,-0.26262125,-0.2359636,0.026983162,0.0038235446,0.041060787,0.0049278466,-0.081919044,-0.028299747,0.10402324,0.007430988,-0.038381826],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,-1,-1,7,9,-1,-1,-1,-1],"rc":[2,4,6,-1,-1,8,10,-1,-1,-1,-1],"si":[9,11,10,0,0,8,4,0,0,0,0],"sc":[97.0,9238.0,106.0,0.10307252,-0.012328485,40.0,1.0,-0.082898796,0.052693903,0.02005325,-0.00168509],"bw":[1.21089115e-05,0.6160152,-0.0055006477,0.10307252,-0.012328485,-0.45364222,0.0047206134,-0.082898796,0.052693903,0.02005325,-0.00168509],"dl":[0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,-1,5,7,-1,-1,-1,-1],"rc":[2,4,-1,6,8,-1,-1,-1,-1],"si":[5,7,0,3,9,0,0,0,0],"sc":[16.6,13.937143,0.06988093,13.071428,127.5,-0.002125705,0.028397826,-0.0622362,0.006833896],"bw":[0.00023270365,-0.004507206,0.06988093,0.017161917,-0.18512501,-0.002125705,0.028397826,-0.0622362,0.006833896],"dl":[0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,2,9,9,9,5,5,0,0,0,0,0,0,0,0],"sc":[0.65384614,10.0,119.6,120.1,125.2,11.95625,14.535714,0.02131071,-0.0092758965,-0.015725404,0.13392161,0.0065840553,-0.050543148,-0.00521972,0.049325027],"bw":[0.0002567008,0.057957802,-0.060439,0.026002089,0.6745676,-0.29008108,0.017969772,0.02131071,-0.0092758965,-0.015725404,0.13392161,0.0065840553,-0.050543148,-0.00521972,0.049325027],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,-1,9,11,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,-1,10,12,-1,-1,-1,-1,-1,-1],"si":[13,11,6,10,0,8,2,0,0,0,0,0,0],"sc":[4.0,9070.0,2.0,159.0,0.10266334,35.0,5.0,-0.024214072,0.06137092,-0.04573307,0.07448381,0.068011485,-0.0019635705],"bw":[0.0004947355,0.1597695,-0.020585498,-0.12654766,0.10266334,-0.31666914,0.018904971,-0.024214072,0.06137092,-0.04573307,0.07448381,0.068011485,-0.0019635705],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[7,11,8,12,7,13,7,0,0,0,0,0,0,0,0],"sc":[12.18,9254.0,19.0,2.0,11.375,15.0,12.428572,0.058452845,-0.010517499,0.001695492,0.055985212,0.01584065,0.14935099,-0.0576388,-0.009135824],"bw":[0.001337629,0.05286005,-0.06271538,-0.061897784,0.26080194,0.23008664,-0.16187924,0.058452845,-0.010517499,0.001695492,0.055985212,0.01584065,0.14935099,-0.0576388,-0.009135824],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,-1,-1,-1,-1,-1,-1,-1],"si":[0,6,7,14,0,12,0,0,0,0,0,0,0],"sc":[0.9411765,13.0,14.636364,10.0,0.8372093,9.0,0.022927195,0.00510887,-0.008797388,0.09082817,-0.014147522,-0.07983056,0.0065092654],"bw":[0.0016963792,0.009588379,-0.3999794,0.0012679446,0.50325745,-0.5507254,0.022927195,0.00510887,-0.008797388,0.09082817,-0.014147522,-0.07983056,0.0065092654],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[13,13,6,14,7,11,14,0,0,0,0,0,0,0,0],"sc":[9.0,8.0,2.0,13.0,13.285714,9119.0,9.0,0.0011083257,0.07786982,-0.04365718,0.008974863,0.05669392,-0.0848833,0.03608132,0.0019351244],"bw":[0.0015536866,-0.05218938,0.061162293,0.04262432,-0.2884895,-0.5135347,0.11338161,0.0011083257,0.07786982,-0.04365718,0.008974863,0.05669392,-0.0848833,0.03608132,0.0019351244],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"lc":[1,3,5,7,9,11,13,-1,-1,-1,-1,-1,-1,-1,-1],"rc":[2,4,6,8,10,12,14,-1,-1,-1,-1,-1,-1,-1,-1],"si":[0,14,9,11,9,14,10,0,0,0,0,0,0,0,0],"sc":[0.65384614,20.0,119.6,9254.0,125.2,13.0,130.0,-0.0047031795,0.023297636,0.028932048,0.13007203,-0.03788397,0.034081813,0.03257622,-0.009396731],"bw":[0.0015320763,0.05862511,-0.05840793,0.040083006,1.0402102,-0.2716852,0.012902563,-0.0047031795,0.023297636,0.028932048,0.13007203,-0.03788397,0.034081813,0.03257622,-0.009396731],"dl":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}],"base_logit":-0.7479084948944591,"features":["approval_rate","Curricular units 2nd sem (approved)","total_approved","avg_grade","Tuition fees up to date","Curricular units 2nd sem (grade)","Curricular units 1st sem (approved)","Curricular units 1st sem (grade)","Age at enrollment","Admission grade","Previous qualification (grade)","Course","Father's occupation","Curricular units 2nd sem (evaluations)","Curricular units 1st sem (evaluations)","Mother's occupation"]};
+
+// ═══════════════════════════════════════════════
+// XGBoost INFERENCE (pure JS, matches Python exactly)
+// ═══════════════════════════════════════════════
+function xgbPredict(inputDict) {
+  let margin = MODEL.base_logit;
+  for (const tree of MODEL.trees) {
+    let node = 0;
+    while (tree.lc[node] !== -1) {
+      const feat = MODEL.features[tree.si[node]];
+      const val = inputDict[feat];
+      if (val === undefined || val === null || isNaN(val)) {
+        node = tree.dl[node] ? tree.lc[node] : tree.rc[node];
+      } else if (val < tree.sc[node]) {
+        node = tree.lc[node];
+      } else {
+        node = tree.rc[node];
+      }
+    }
+    margin += tree.bw[node];
+  }
+  return 1 / (1 + Math.exp(-margin));
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const state = { scholarship: 0, tuition: 1 };
+
+function toggleBtn(btn) {
+  const field = btn.dataset.field;
+  const val = parseInt(btn.dataset.val);
+  state[field] = val;
+  btn.closest('.select-group').querySelectorAll('.select-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+// PREDICTION
+// ═══════════════════════════════════════════════
+function predict() {
+  const age        = parseFloat(document.getElementById('age').value);
+  const admgrade   = parseFloat(document.getElementById('admgrade').value);
+  const prevgrade  = parseFloat(document.getElementById('prevgrade').value);
+  const course     = parseFloat(document.getElementById('course').value);
+  const avggrade   = parseFloat(document.getElementById('avggrade').value);
+  const apprate    = parseFloat(document.getElementById('apprate').value);
+  const totapproved= parseFloat(document.getElementById('totapproved').value);
+  const s1approved = parseFloat(document.getElementById('s1approved').value);
+  const s2approved = parseFloat(document.getElementById('s2approved').value);
+  const s1grade    = parseFloat(document.getElementById('s1grade').value);
+  const s2grade    = parseFloat(document.getElementById('s2grade').value);
+  const s1eval     = parseFloat(document.getElementById('s1eval').value);
+  const s2eval     = parseFloat(document.getElementById('s2eval').value);
+  const mocc       = parseFloat(document.getElementById('mocc').value);
+  const focc       = parseFloat(document.getElementById('focc').value);
+
+  const input = {
+    'approval_rate': apprate,
+    'Curricular units 2nd sem (approved)': s2approved,
+    'total_approved': totapproved,
+    'avg_grade': avggrade,
+    'Tuition fees up to date': state.tuition,
+    'Curricular units 2nd sem (grade)': s2grade,
+    'Curricular units 1st sem (approved)': s1approved,
+    'Curricular units 1st sem (grade)': s1grade,
+    'Age at enrollment': age,
+    'Admission grade': admgrade,
+    'Previous qualification (grade)': prevgrade,
+    'Course': course,
+    "Father's occupation": focc,
+    'Curricular units 2nd sem (evaluations)': s2eval,
+    'Curricular units 1st sem (evaluations)': s1eval,
+    "Mother's occupation": mocc
+  };
+
+  const prob = xgbPredict(input);
+  showResult(prob, input);
+}
+
+function showResult(prob, input) {
+  const pct = Math.round(prob * 100);
+  const panel = document.getElementById('result-panel');
+  panel.classList.add('show');
+
+  // Circle gauge
+  const circumference = 339;
+  const offset = circumference - (prob * circumference);
+  const fill = document.getElementById('circle-fill');
+  fill.style.strokeDashoffset = circumference; // reset first
+  setTimeout(() => { fill.style.strokeDashoffset = offset; }, 50);
+
+  // Color
+  let color, level, msg, emoji;
+  if (prob > 0.6) {
+    color = 'var(--high)'; level = '🔴 High Risk'; emoji = '🚨';
+    msg = 'This student shows strong indicators of dropping out. Immediate academic and personal support is recommended.';
+  } else if (prob > 0.35) {
+    color = 'var(--mid)'; level = '🟡 Medium Risk'; emoji = '⚠️';
+    msg = 'This student may be struggling. Close monitoring and early intervention can prevent dropout.';
+  } else {
+    color = 'var(--low)'; level = '🟢 Low Risk'; emoji = '✅';
+    msg = 'This student appears to be on track. Continued engagement and support will maintain this trajectory.';
+  }
+
+  fill.style.stroke = color;
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('word-label').textContent = prob > 0.6 ? 'HIGH' : prob > 0.35 ? 'MEDIUM' : 'LOW';
+  document.getElementById('word-label').style.color = color;
+  document.getElementById('level-badge').textContent = level;
+  document.getElementById('level-badge').style.color = color;
+  document.getElementById('risk-message').textContent = msg;
+
+  // Bar gauge
+  const bar = document.getElementById('bar-fill');
+  bar.style.width = '0%';
+  setTimeout(() => {
+    bar.style.width = (pct) + '%';
+    bar.style.background = prob > 0.6
+      ? 'linear-gradient(90deg, var(--low) 0%, var(--mid) 35%, var(--high) 60%)'
+      : prob > 0.35
+        ? 'linear-gradient(90deg, var(--low) 0%, var(--mid) 50%)'
+        : 'var(--low)';
+  }, 100);
+
+  // Factor importance (simplified based on key features)
+  const factors = [
+    { name: 'Approval Rate',      val: input['approval_rate'],           max: 1,   inv: true,  label: (1-input['approval_rate']).toFixed(2) },
+    { name: 'Tuition Up to Date', val: 1 - input['Tuition fees up to date'], max: 1, label: input['Tuition fees up to date'] ? 'Yes ✓' : 'No ✗' },
+    { name: 'Avg Grade',          val: (20 - input['avg_grade'])/20,     max: 1,   label: input['avg_grade'].toFixed(1) + '/20' },
+    { name: '2nd Sem Approved',   val: (12 - Math.min(input['Curricular units 2nd sem (approved)'],12))/12, max:1, label: input['Curricular units 2nd sem (approved)'] + ' units'},
+    { name: 'Age at Enrollment',  val: Math.min((input['Age at enrollment']-17)/43,1), max:1, label: input['Age at enrollment'] + ' yrs' },
+  ];
+
+  const fList = document.getElementById('factors-list');
+  fList.innerHTML = '';
+  factors.forEach(f => {
+    const riskPct = Math.round(f.val * 100);
+    const barColor = f.val > 0.6 ? 'var(--high)' : f.val > 0.35 ? 'var(--mid)' : 'var(--low)';
+    fList.innerHTML += `
+      <div class="factor-row">
+        <div class="factor-name">${f.name}</div>
+        <div class="factor-bar-track">
+          <div class="factor-bar-fill" style="width:${riskPct}%;background:${barColor}"></div>
+        </div>
+        <div class="factor-val" style="color:${barColor}">${f.label}</div>
+      </div>`;
+  });
+
+  // Recommendations
+  const recs = [];
+  if (input['Tuition fees up to date'] === 0)
+    recs.push({ icon: '💰', text: 'Connect student with financial aid office — unpaid tuition is a top predictor of dropout.' });
+  if (input['approval_rate'] < 0.5)
+    recs.push({ icon: '📚', text: 'Student is failing more than half of enrolled units. Tutoring or academic counseling is urgently needed.' });
+  if (input['avg_grade'] < 10)
+    recs.push({ icon: '📉', text: 'Average grade below 10. Consider a reduced course load or academic support program.' });
+  if (input['Age at enrollment'] > 30)
+    recs.push({ icon: '🏠', text: 'Mature student detected. Check for work-life balance issues and offer flexible scheduling options.' });
+  if (input['Curricular units 2nd sem (approved)'] < 3)
+    recs.push({ icon: '🎓', text: 'Very few units approved in 2nd semester. Schedule a meeting with academic advisor immediately.' });
+
+  if (recs.length === 0)
+    recs.push({ icon: '👍', text: 'No critical risk factors detected. Keep monitoring progress each semester.' });
+
+  const rList = document.getElementById('rec-list');
+  rList.innerHTML = '';
+  recs.forEach(r => {
+    const bcolor = prob > 0.6 ? 'var(--high)' : prob > 0.35 ? 'var(--mid)' : 'var(--low)';
+    rList.innerHTML += `
+      <div class="rec-item" style="border-left-color:${bcolor}">
+        <span class="rec-icon">${r.icon}</span>
+        <span>${r.text}</span>
+      </div>`;
+  });
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>

@@ -1,199 +1,373 @@
-// ============================================
-// timetable.js  –  Frontend ↔ PHP API bridge
-// ============================================
-// Place next to timetable.html
-// Make sure api.php is at API_URL below.
-// ============================================
+// ════════════════════════════════════════════════════════════════
+//  table.js  —  Student Pack · Emploi du Temps
+//
+//  Auth flow:
+//    1. On load  → GET authcheck.php  (is session alive?)
+//       • Logged in  → show app, load slots from DB via slots_api.php
+//       • Not logged → redirect to authentification.php
+//
+//  Timetable data is stored in MySQL via slots_api.php (persistent).
+// ════════════════════════════════════════════════════════════════
 
-const API_URL = 'api.php';   // adjust path if needed, e.g. '../backend/api.php'
+/* ──────────────────────────────────────────
+   SUBJECTS DATA
+────────────────────────────────────────── */
+const SUBJECTS = [
+  { name: 'Analyse',                  desc: 'Calcul, algèbre, géométrie',         color: '#378ADD' },
+  { name: 'Algèbre',                  desc: 'Matrices, espace vectoriel',          color: '#1D9E75' },
+  { name: 'Applications Réparties',   desc: 'Micro-services, systèmes',            color: '#D85A30' },
+  { name: 'Architecture des Réseaux', desc: 'Sécurité, supervision',               color: '#D4537E' },
+  { name: 'Comptabilité',             desc: 'Bilan, journal',                      color: '#BA7517' },
+  { name: 'Conception des SI',        desc: 'UML, diagrammes',                     color: '#7F77DD' },
+  { name: 'Droit',                    desc: 'Contrats, législation',               color: '#888780' },
+  { name: 'Java',                     desc: 'GUI, POO',                            color: '#E24B4A' },
+  { name: 'SGBD',                     desc: 'SQL, PL/SQL, optimisation',           color: '#639922' },
+  { name: 'UNIX',                     desc: 'Ubuntu, commandes',                   color: '#0F6E56' },
+  { name: 'WEB',                      desc: 'HTML, CSS, JS, PHP',                  color: '#185FA5' },
+  { name: 'Anglais',                  desc: 'Team work, leadership',               color: '#993C1D' },
+];
 
-// ── State ─────────────────────────────────────
-let subjects = [];   // { id, name, description, color }
-let slots    = [];   // { id, subject, color, day, time }
+const SUBJECT_COLOR = {};
+SUBJECTS.forEach(s => { SUBJECT_COLOR[s.name] = s.color; });
 
-// ── Boot ──────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadSubjects();
-    await loadSlots();
-    bindForm();
-});
-
-// ── API helpers ───────────────────────────────
-async function apiFetch(url, options = {}) {
-    const res = await fetch(url, options);
-    const data = await res.json();
-    if (!data.success && data.error) throw new Error(data.error);
-    return data;
-}
-
-// ── Load subjects ─────────────────────────────
-async function loadSubjects() {
-    try {
-        const data = await apiFetch(`${API_URL}?action=subjects`);
-        subjects = data.subjects;
-        populateSubjectSelect();
-        renderSubjectCards();
-    } catch (err) {
-        showNotification('Erreur lors du chargement des matières: ' + err.message, 'error');
-    }
-}
-
-function populateSubjectSelect() {
-    const sel = document.getElementById('matiere');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">Choisir...</option>';
-    subjects.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        sel.appendChild(opt);
-    });
-}
-
-function renderSubjectCards() {
-    const container = document.getElementById('subjects-grid');
-    if (!container) return;
-    container.innerHTML = '';
-    subjects.forEach((s, i) => {
-        const card = document.createElement('div');
-        card.className = 'subject-card';
-        card.style.setProperty('--c', s.color);
-        card.style.setProperty('--c-glow', s.color + '22');
-        card.style.animationDelay = (i * 55) + 'ms';
-        card.innerHTML = `<h3>${s.name}</h3><p>${s.description}</p>`;
-        container.appendChild(card);
-    });
-}
-
-// ── Load timetable slots ───────────────────────
-async function loadSlots() {
-    try {
-        const data = await apiFetch(`${API_URL}?action=slots`);
-        slots = data.slots;
-        renderTable();
-        updateStatCounter();
-    } catch (err) {
-        showNotification('Erreur lors du chargement du planning: ' + err.message, 'error');
-    }
-}
-
-// ── Render the weekly table ────────────────────
+/* ──────────────────────────────────────────
+   CONSTANTS
+────────────────────────────────────────── */
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
-function renderTable() {
-    const tbody = document.getElementById('emploiDuTemps');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+const DAY_CLASS = {
+  Lundi:    'day-lundi',
+  Mardi:    'day-mardi',
+  Mercredi: 'day-mercredi',
+  Jeudi:    'day-jeudi',
+  Vendredi: 'day-vendredi',
+};
 
-    if (slots.length === 0) {
-        const tr = document.createElement('tr');
-        tr.className = 'empty-row';
-        tr.innerHTML = `<td colspan="4"><div class="empty-state">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
-            <p>Aucun cours planifié pour l'instant.<br>Ajoutez votre premier cours ci-dessus.</p>
-        </div></td>`;
-        tbody.appendChild(tr);
-        return;
+const PARTICLE_COLORS = ['#6366f1','#f472b6','#34d399','#fb923c','#a78bfa','#38bdf8'];
+
+// Resolve path to API — works whether timetable.php lives in root or a subfolder
+const API_BASE = (function () {
+  // Walk up from current page until we find the root (where slots_api.php lives)
+  // Strategy: slots_api.php is always at the project root alongside config.php
+  const path = window.location.pathname;
+  // If we're in a subfolder like /Time Table/, go up one level
+  const depth = (path.match(/\//g) || []).length - 1; // slashes minus the leading one
+  if (depth <= 1) return './slots_api.php';            // already at root
+  return '../slots_api.php';                           // one level deep
+})();
+
+const AUTH_CHECK = API_BASE.replace('slots_api.php', 'authcheck.php');
+const LOGIN_PAGE = API_BASE.replace('slots_api.php', 'Authentification/authentification.php');
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let currentUser = null;
+let slots       = [];      // kept in memory; source of truth is the DB
+
+/* ──────────────────────────────────────────
+   BOOT — check session, then load data
+────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', async () => {
+  spawnParticles();
+  await bootAuth();
+});
+
+async function bootAuth() {
+  try {
+    const res  = await fetch(AUTH_CHECK, { credentials: 'same-origin' });
+    const data = await res.json();
+
+    if (!data.loggedIn) {
+      // Not logged in → redirect to login page
+      window.location.href = LOGIN_PAGE;
+      return;
     }
 
-    // Sort by day then time
-    const sorted = [...slots].sort((a, b) => {
-        const di = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
-        return di !== 0 ? di : a.time.localeCompare(b.time);
-    });
+    currentUser = data.username;
 
-    sorted.forEach((slot, i) => {
-        const tr = document.createElement('tr');
-        tr.dataset.slotId = slot.id;
-        tr.style.animationDelay = (i * 40) + 'ms';
-        tr.innerHTML = `
-            <td>${slot.day}</td>
-            <td>${slot.time}</td>
-            <td>
-                <span class="subject-badge" style="--badge-bg:${slot.color}18;--badge-color:${slot.color};--badge-border:${slot.color}33;">${slot.subject}</span>
-            </td>
-            <td>
-                <button class="btn-delete" onclick="deleteSlot(${slot.id})">
-                    Supprimer
-                </button>
-            </td>`;
-        tbody.appendChild(tr);
-    });
+    // Update logout button visibility
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.style.display = '';
+
+    // Show welcome + init app
+    showApp(data.full_name || data.username);
+
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    // If server unreachable, still show the page (dev/offline mode)
+    showApp('Étudiant');
+  }
 }
 
-// ── Bind form submit ───────────────────────────
-function bindForm() {
-    const form = document.getElementById('formMatiere');
-    if (!form) return;
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const subjectId = document.getElementById('matiere').value;
-        const day       = document.getElementById('jour').value;
-        const time      = document.getElementById('heure').value;
+/* ════════════════════════════════════════════
+   PARTICLES
+════════════════════════════════════════════ */
+function spawnParticles() {
+  const container = document.getElementById('particles');
+  if (!container) return;
 
-        if (!subjectId || !day || !time) {
-            showNotification('Veuillez remplir tous les champs.', 'error');
-            return;
-        }
+  for (let i = 0; i < 28; i++) {
+    const p     = document.createElement('div');
+    p.className = 'particle';
+    const size  = Math.random() * 5 + 2;
+    const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
 
-        try {
-            await apiFetch(`${API_URL}?action=add_slot`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject_id: subjectId, day, time }),
-            });
-            form.reset();
-            showNotification('Cours ajouté avec succès !', 'success');
-            await loadSlots();   // refresh table from DB
-        } catch (err) {
-            showNotification(err.message, 'error');
-        }
+    Object.assign(p.style, {
+      width:      size + 'px',
+      height:     size + 'px',
+      background: color,
+      boxShadow:  `0 0 ${size * 3}px ${color}`,
+      left:       Math.random() * 100 + '%',
+      '--dur':    (10 + Math.random() * 14) + 's',
+      '--delay':  (Math.random() * 12) + 's',
     });
+
+    container.appendChild(p);
+  }
 }
 
-// ── Delete a slot ──────────────────────────────
+/* ════════════════════════════════════════════
+   APP INITIALIZATION
+════════════════════════════════════════════ */
+async function showApp(displayName) {
+  const welcome = document.getElementById('userWelcome');
+  if (welcome) welcome.textContent = '👋 Bienvenue, ' + displayName;
+
+  renderSubjectCards();
+  await loadSlotsFromDB();
+  renderTable();
+}
+
+/* ════════════════════════════════════════════
+   SUBJECT CARDS
+════════════════════════════════════════════ */
+function renderSubjectCards() {
+  const grid = document.getElementById('subjectsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+
+  SUBJECTS.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'sub-card';
+    card.style.setProperty('--sc',      s.color);
+    card.style.setProperty('--sc-glow', s.color + '2e');
+    card.style.animationDelay = (i * 50) + 'ms';
+    card.innerHTML = `<h3>${s.name}</h3><p>${s.desc}</p>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ════════════════════════════════════════════
+   DB API HELPERS
+════════════════════════════════════════════ */
+
+/** Load all slots for the current user from the database */
+async function loadSlotsFromDB() {
+  try {
+    const res  = await fetch(API_BASE, { credentials: 'same-origin' });
+    const data = await res.json();
+
+    if (data.success) {
+      slots = data.slots.map(s => ({
+        id:      parseInt(s.id),
+        subject: s.subject,
+        day:     s.day,
+        time:    s.time,
+        color:   s.color || SUBJECT_COLOR[s.subject] || '#6366f1',
+      }));
+    } else {
+      console.error('loadSlotsFromDB error:', data.error);
+      slots = [];
+    }
+  } catch (err) {
+    console.error('loadSlotsFromDB fetch error:', err);
+    slots = [];
+  }
+}
+
+/** POST a new slot to the database */
+async function createSlotInDB(subject, day, time) {
+  const res  = await fetch(API_BASE, {
+    method:      'POST',
+    credentials: 'same-origin',
+    headers:     { 'Content-Type': 'application/json' },
+    body:        JSON.stringify({ subject, day, time }),
+  });
+  return await res.json();
+}
+
+/** DELETE a slot from the database */
+async function deleteSlotFromDB(id) {
+  const res = await fetch(API_BASE + '?id=' + id, {
+    method:      'DELETE',
+    credentials: 'same-origin',
+  });
+  return await res.json();
+}
+
+/* ════════════════════════════════════════════
+   SLOT CRUD (called from UI)
+════════════════════════════════════════════ */
+async function addSlot() {
+  const matiere = document.getElementById('matiere').value;
+  const jour    = document.getElementById('jour').value;
+  const heure   = document.getElementById('heure').value;
+
+  if (!matiere || !jour || !heure) {
+    showToast('Veuillez remplir tous les champs.', 'error');
+    return;
+  }
+
+  // Optimistic duplicate check (client-side, fast feedback)
+  if (slots.some(s => s.day === jour && s.time === heure)) {
+    showToast('Un cours existe déjà à ce créneau !', 'error');
+    return;
+  }
+
+  // Disable button while saving
+  const btn = document.querySelector('.btn-add');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Ajout…'; }
+
+  try {
+    const data = await createSlotInDB(matiere, jour, heure);
+
+    if (data.success) {
+      const s = data.slot;
+      slots.push({
+        id:      parseInt(s.id),
+        subject: s.subject,
+        day:     s.day,
+        time:    s.time,
+        color:   s.color || SUBJECT_COLOR[s.subject] || '#6366f1',
+      });
+      renderTable();
+      showToast('✅ Cours ajouté et sauvegardé !', 'success');
+
+      document.getElementById('matiere').value = '';
+      document.getElementById('jour').value    = '';
+      document.getElementById('heure').value   = '';
+    } else {
+      showToast(data.error || 'Erreur lors de l\'ajout.', 'error');
+    }
+  } catch (err) {
+    console.error('addSlot error:', err);
+    showToast('❌ Impossible de contacter le serveur.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled    = false;
+      btn.innerHTML   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Ajouter`;
+    }
+  }
+}
+
 async function deleteSlot(id) {
-    if (!confirm('Supprimer ce cours ?')) return;
-    try {
-        await apiFetch(`${API_URL}?action=delete_slot&id=${id}`, { method: 'DELETE' });
-        showNotification('Cours supprimé.', 'success');
-        await loadSlots();
-    } catch (err) {
-        showNotification(err.message, 'error');
+  try {
+    const data = await deleteSlotFromDB(id);
+
+    if (data.success) {
+      slots = slots.filter(s => s.id !== id);
+      renderTable();
+      showToast('Cours supprimé.', 'success');
+    } else {
+      showToast(data.error || 'Erreur lors de la suppression.', 'error');
     }
+  } catch (err) {
+    console.error('deleteSlot error:', err);
+    showToast('❌ Impossible de contacter le serveur.', 'error');
+  }
 }
 
-// ── Simple toast notification ──────────────────
-function showNotification(msg, type = 'success') {
-    const toast = document.getElementById('tt-toast');
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.className = 'toast ' + type + ' show';
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+/* ════════════════════════════════════════════
+   TABLE RENDERING
+════════════════════════════════════════════ */
+function renderTable() {
+  const tbody = document.getElementById('emploiDuTemps');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  const statSlots = document.getElementById('statSlots');
+  const slotCount = document.getElementById('slotCount');
+  if (statSlots) statSlots.textContent = slots.length;
+  if (slotCount) slotCount.textContent = slots.length + ' cours';
+
+  if (slots.length === 0) {
+    const tr = document.createElement('tr');
+    tr.className = 'empty-row';
+    tr.innerHTML = `
+      <td colspan="4">
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <p>Aucun cours planifié pour l'instant.<br/>Ajoutez votre premier cours ci-dessus.</p>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  const sorted = [...slots].sort((a, b) => {
+    const di = DAYS.indexOf(a.day) - DAYS.indexOf(b.day);
+    return di !== 0 ? di : a.time.localeCompare(b.time);
+  });
+
+  sorted.forEach((slot, i) => {
+    const c  = slot.color;
+    const tr = document.createElement('tr');
+    tr.className            = DAY_CLASS[slot.day] || '';
+    tr.style.animationDelay = (i * 40) + 'ms';
+
+    tr.innerHTML = `
+      <td class="day-cell">${slot.day}</td>
+      <td class="time-cell">${slot.time}</td>
+      <td>
+        <span class="subject-badge" style="
+          background: ${c}18;
+          color: ${c};
+          border: 1px solid ${c}33;
+        ">
+          <span style="
+            display:inline-block;
+            width:6px; height:6px;
+            border-radius:50%;
+            background:${c};
+            box-shadow:0 0 6px ${c};
+            flex-shrink:0;
+          "></span>
+          ${slot.subject}
+        </span>
+      </td>
+      <td>
+        <button class="btn-del" onclick="deleteSlot(${slot.id})">
+          ✕ Supprimer
+        </button>
+      </td>`;
+
+    tbody.appendChild(tr);
+  });
 }
 
-// ── Update header stat counter ─────────────────
-function updateStatCounter() {
-    const el = document.getElementById('statSlots');
-    if (el) el.textContent = slots.length;
+/* ════════════════════════════════════════════
+   TOAST NOTIFICATION
+════════════════════════════════════════════ */
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+
+  toast.textContent = msg;
+  toast.className   = 'toast ' + type + ' show';
+
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 3200);
 }
 
-// ── Mobile sidebar toggle ─────────────────────
-const burger = document.getElementById('burger');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebarOverlay');
-
-function openSidebar() {
-    sidebar?.classList.add('open');
-    overlay?.classList.add('open');
-    document.body.style.overflow = 'hidden';
+/* ════════════════════════════════════════════
+   LOGOUT
+════════════════════════════════════════════ */
+async function logout() {
+  try {
+    await fetch(API_BASE.replace('slots_api.php', 'logout.php'), { credentials: 'same-origin' });
+  } catch { /* ignore */ }
+  window.location.href = LOGIN_PAGE;
 }
-function closeSidebar() {
-    sidebar?.classList.remove('open');
-    overlay?.classList.remove('open');
-    document.body.style.overflow = '';
-}
-
-burger?.addEventListener('click', openSidebar);
-overlay?.addEventListener('click', closeSidebar);

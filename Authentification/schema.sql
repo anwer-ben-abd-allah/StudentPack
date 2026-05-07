@@ -1,0 +1,70 @@
+-- ════════════════════════════════════════════
+--  Student Pack — Full Database Schema
+--  Run this once to set up all tables.
+-- ════════════════════════════════════════════
+
+CREATE DATABASE IF NOT EXISTS student_pack
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE student_pack;
+
+-- ── Users ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    username   VARCHAR(60)  NOT NULL UNIQUE,
+    password   VARCHAR(255) NOT NULL,          -- bcrypt hash (or plain for demo)
+    full_name  VARCHAR(120),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Subjects ─────────────────────────────────
+CREATE TABLE IF NOT EXISTS subjects (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    color       VARCHAR(7) DEFAULT '#378ADD'
+);
+
+-- ── Timetable slots ──────────────────────────
+-- Stores one row per (user, day, time) combination.
+-- subject_id links to subjects so we always get the canonical color.
+-- The UNIQUE KEY prevents double-booking the same slot for a user.
+CREATE TABLE IF NOT EXISTS timetable (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT  NOT NULL,
+    subject_id INT  NOT NULL,
+    day        ENUM('Lundi','Mardi','Mercredi','Jeudi','Vendredi') NOT NULL,
+    time_slot  TIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_slot (user_id, day, time_slot)
+);
+
+-- ════════════════════════════════════════════
+--  Seed subjects
+-- ════════════════════════════════════════════
+INSERT IGNORE INTO subjects (name, description, color) VALUES
+    ('Analyse',                  'Calcul, algèbre, géométrie',        '#378ADD'),
+    ('Algèbre',                  'Matrices, espace vectoriel',         '#1D9E75'),
+    ('Applications Réparties',   'Micro-services, systèmes',           '#D85A30'),
+    ('Architecture des Réseaux', 'Sécurité, supervision',              '#D4537E'),
+    ('Comptabilité',             'Bilan, journal',                     '#BA7517'),
+    ('Conception des SI',        'UML, diagrammes',                    '#7F77DD'),
+    ('Droit',                    'Contrats, législation',              '#888780'),
+    ('Java',                     'GUI, POO',                           '#E24B4A'),
+    ('SGBD',                     'SQL, PL/SQL, optimisation',          '#639922'),
+    ('UNIX',                     'Ubuntu, commandes',                  '#0F6E56'),
+    ('WEB',                      'HTML, CSS, JS, PHP',                 '#185FA5'),
+    ('Anglais',                  'Team work, leadership',              '#993C1D');
+
+-- ════════════════════════════════════════════
+--  Demo users
+--  NOTE: In production replace passwords with bcrypt hashes:
+--    php -r "echo password_hash('yourpassword', PASSWORD_BCRYPT);"
+--  For now login.php does a plain string comparison (demo mode).
+-- ════════════════════════════════════════════
+INSERT IGNORE INTO users (username, password, full_name) VALUES
+    ('etudiant', 'etud123',  'Étudiant Demo'),
+    ('admin',    'admin123', 'Administrateur');
