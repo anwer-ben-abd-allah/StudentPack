@@ -19,13 +19,15 @@
     Student Pack
   </a>
   <ul class="nav-links">
-    <li><a href="../index.html">🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php">📅 Emploi du temps</a></li>
-    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
-    <li><a href="../Exams/exams.html">📝 Examens</a></li>
-    <li><a href="../Grades/grades.html">📓 Notes</a></li>
-    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
-    <li><a href="../dropout_risk_detector/dropout.html" >🤖 Dropout Detector</a></li>
+    <li><a href="../index.html" id="homeLink">🏠 Accueil</a></li>
+    <li><a href="../Time Table/timetable.php" id="timetableLink">📅 Emploi du temps</a></li>
+    <li><a href="../Tasks/tasks.html" id="tasksLink">✅ Tâches</a></li>
+    <li><a href="../Exams/exams.html" id="examsLink">📝 Examens</a></li>
+    <li><a href="../Emails/emails.html" id="emailsLink">✉️ Emails</a></li>
+    <li><a href="../Notes/notes.html" id="notesLink">📝 Notes</a></li>
+    <li><a href="../Grades/grades.html" id="gradesLink">📓 Notes</a></li>
+    <li><a href="../Pomodoro/pomodoro.html" id="pomodoroLink">⏱ Pomodoro</a></li>
+    <li><a href="../dropout_risk_detector/dropout.html" id="dropoutLink">🤖 Dropout Detector</a></li>
     <li><a href="../Authentification/authentification.php" class="active">🔑 S'identifier</a></li>
   </ul>
   <button class="btn-logout" id="logoutBtn" style="display:none" onclick="logout()">
@@ -54,6 +56,40 @@
       <span id="loginBtnText">Se connecter →</span>
       <span id="loginSpinner" style="display:none">⏳</span>
     </button>
+    <p class="login-note">Pas encore de compte ? <a href="#" id="registerLink" onclick="showRegister(event)">Créer un nouveau compte</a></p>
   </div>
 </div>
+<div id="registerGate" style="display:none ">
+  <div class="login-card" style="margin: auto;">
+    <form action="" id="registerForm">
+      <div class="login-icon">🆕</div>
+      <h2 class="login-title">Créer un compte</h2>
+      <p class="login-sub">Remplissez le formulaire pour créer un nouvel utilisateur.</p>
+
+    <div class="field-group">
+      <label>Nom d'utilisateur</label>
+      <input type="text" class="field-input" id="registerUser" placeholder="ex: jean.dupont" autocomplete="username" />
+    </div>
+    <div class="field-group">
+      <label>Mot de passe</label>
+      <input type="password" class="field-input" id="registerPass" placeholder="••••••••" autocomplete="new-password" />
+    </div>
+    <div class="field-group">
+      <label>Confirmer le mot de passe</label>
+      <input type="password" class="field-input" id="registerPassConfirm" placeholder="••••••••" autocomplete="new-password" />
+    </div>
+
+    <p class="login-error" id="registerError"></p>
+
+    <button class="btn-login" id="registerBtn" onclick="createAccount(event)">
+      <span id="registerBtnText">Créer un compte</span>
+    </button>
+    <p class="login-note">Déjà inscrit ? <a href="#" onclick="showLogin(event)">Se connecter</a></p>
+  </form>
+  </div>
+</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 <script src="../Authentification/auth.js"></script>
+</body>
+</html>

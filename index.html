@@ -5,55 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Pack</title>
     <!-- Latest compiled and minified CSS -->
+     <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
-  <style>
-    .navbar { margin-bottom: 0; border-radius: 0; }
-    .row.content { height: 450px }
-    .sidenav { padding-top: 20px; background-color: #f1f1f1; height: 100%; }
-    footer { background-color: #555; color: white; padding: 15px; }
-    @media screen and (max-width: 767px) {
-      .sidenav { height: auto; padding: 15px; }
-      .row.content { height:auto; }
-    }
-    /* Logged-in user chip in navbar */
-    .nav-user-chip a { cursor: default !important; }
-  </style>
+  
+  <link rel="stylesheet" href="./Time Table/timetable.css">
 </head>
 <body>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#myNavbar">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="index.html">Student Pack</a>
-    </div>
-    <div class="collapse navbar-collapse" id="myNavbar">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="index.html">Home <span class="glyphicon glyphicon-home"></span></a></li>
-        <li><a href="Time Table/timetable.php">Time Table <span class="glyphicon glyphicon-calendar"></span></a></li>
-        <li><a href="Tasks/tasks.html">Tasks <span class="glyphicon glyphicon-tasks"></span></a></li>
-        <li><a href="Upcoming Exams/exams.html">Upcoming Exams <span class="glyphicon glyphicon-list-alt"></span></a></li>
-        <li><a href="Notes/notes.html">Notes <span class="glyphicon glyphicon-pencil"></span></a></li>
-        <li><a href="Emails/emails.html">Emails <span class="glyphicon glyphicon-envelope"></span></a></li>
-        <li><a href="Pomodoro/pomodoro.html">Pomodoro <span class="glyphicon glyphicon-time"></span></a></li>
-      </ul>
-      <!-- navbar_auth.js will inject username + logout here when logged in,
-           and show/hide the login link accordingly -->
-      <ul class="nav navbar-nav navbar-right">
-        <li id="loginLinkLi">
-          <a href="Authentification/authentification.php">
-            <span class="glyphicon glyphicon-log-in"></span> Login
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
+<nav class="navbar">
+  <a class="brand" href="#">
+    <div class="brand-dot"></div>
+    Student Pack
+  </a>
+  <ul class="nav-links">
+    <li><a href="./index.html" class="active">🏠 Accueil</a></li>
+    <li><a href="./Time Table/timetable.php" >📅 Emploi du temps</a></li>
+    <li><a href="./Tasks/tasks.html">✅ Tâches</a></li>
+    <li><a href="./Exams/exams.html">📝 Examens</a></li>
+    <li><a href="./Grades/grades.html">📓 Notes</a></li>
+    <li><a href="./Emails/emails.html">✉ Emails</a></li>
+    <li><a href="./Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
+    <li><a href="./dropout_risk_detector/dropout.html">🤖 Dropout Detector</a></li>
+    <li><a href="./Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
+  </ul>
+  <!-- Shown by navbar_auth.js when logged in -->
+  <button class="btn-logout" id="logoutBtn" style="display:none">
+    ↩ Déconnexion
+  </button>
 </nav>
 
 <div class="container-fluid text-center">
@@ -64,7 +43,7 @@
     </div>
     <div class="col-sm-8 text-left">
       <h1 id="welcomeEl" style="text-align:center">Welcome</h1>
-      <p id="welcomeP" style="text-align:center;color:black;font-size:large;border:1px solid black;">
+      <p id="welcomeP" style="text-align:center;color:white;font-size:large;border:1px solid black;">
         Student Pack is a simple web project made by INSAT students that offers useful tools to help students with studying and school tasks.
       </p>
       <hr>

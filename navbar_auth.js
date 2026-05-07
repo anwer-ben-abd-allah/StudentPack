@@ -14,11 +14,11 @@
 (function () {
   // ── Resolve root-relative paths ─────────────────────────────
   // Count how many directories deep the current page is.
-  // e.g.  /index.html          → depth 0 → prefix = './'
-  //       /Time Table/timetable.php → depth 1 → prefix = '../'
+  // e.g.  /StudentPack/index.html          → depth 1 → prefix = './'
+  //       /StudentPack/Time Table/timetable.php → depth 2 → prefix = '../'
   function getRootPrefix() {
     const parts = window.location.pathname.replace(/\/[^/]+$/, '').split('/').filter(Boolean);
-    return parts.length === 0 ? './' : '../'.repeat(parts.length);
+    return parts.length <= 1 ? './' : '../'.repeat(parts.length - 1);
   }
 
   const root = getRootPrefix();
@@ -26,9 +26,8 @@
   // ── Run after DOM is ready ───────────────────────────────────
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-      const res  = await fetch(root + '/Authentification/authcheck.php', { credentials: 'same-origin' });
+      const res  = await fetch(root + 'Authentification/authcheck.php', { credentials: 'same-origin' });
       const data = await res.json();
-
       updateNavbar(data.loggedIn, data.username, data.full_name);
     } catch (err) {
       // Server unreachable — silent fail, don't break the page
@@ -39,7 +38,7 @@
   // ── DOM updates ──────────────────────────────────────────────
   function updateNavbar(loggedIn, username, fullName) {
     const displayName = fullName || username || '';
-
+    
     // Mark body for CSS hooks
     document.body.dataset.loggedIn = loggedIn ? 'true' : 'false';
     if (username) document.body.dataset.username = username;
@@ -70,7 +69,6 @@
 
     // #logoutBtn → show only when logged in
     const logoutBtn = document.getElementById('logoutBtn');
-    console.log('logoutBtn', logoutBtn, 'loggedIn', loggedIn);
     if (logoutBtn) {
       logoutBtn.style.display = loggedIn ? '' : 'none';
 
@@ -79,7 +77,7 @@
         logoutBtn.dataset.authBound = '1';
         logoutBtn.addEventListener('click', async () => {
           try {
-            await fetch(root + '/Authentification/logout.php', { credentials: 'same-origin' });
+            await fetch(root + 'Authentification/logout.php', { credentials: 'same-origin' });
           } catch { /* ignore */ }
           window.location.href = root + 'Authentification/authentification.php';
         });
@@ -97,7 +95,6 @@
     if (loginBtn) {
       loginBtn.style.display = loggedIn ? 'none' : '';
     }
-    console.log('loginLink', loginLink, 'loginBtn', loginBtn, 'loggedIn', loggedIn);
    
 
     // ── Inject user pill into Bootstrap navbar (index.html) ──
@@ -126,7 +123,7 @@
         document.getElementById('logoutBtn').addEventListener('click', async (e) => {
           e.preventDefault();
           try {
-            await fetch(root + 'logout.php', { credentials: 'same-origin' });
+            await fetch(root + 'Authentification/logout.php', { credentials: 'same-origin' });
           } catch { /* ignore */ }
           window.location.href = root + 'Authentification/authentification.php';
         });

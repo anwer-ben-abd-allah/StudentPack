@@ -12,24 +12,31 @@
     
     <!-- <link rel="stylesheet" href="../index.css"> -->
     <link rel="stylesheet" href="exams.css">
+    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+      <link rel="stylesheet" href="../Time Table/timetable.css">
 </head>
 <body>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Student Pack</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li><a href="../index.html">Home <span class="glyphicon glyphicon-home"></span></a></li>
-      <li><a href="../Time Table/timetable.html">Time Table <span class="glyphicon glyphicon-calendar"></span></a></li>
-      <li><a href="../Tasks/tasks.html">Tasks <span class="glyphicon glyphicon-tasks"></span></a></li>
-      <li class="active"><a href="exams.html">Upcoming Exams <span class="glyphicon glyphicon-list-alt"></span></a></li>
-      <li><a href="../Notes/notes.html">Notes <span class="glyphicon glyphicon-pencil"></span></a></li>
-      <li><a href="../Emails/emails.html">Emails <span class="glyphicon glyphicon-envelope"></span></a></li>
-      <li><a href="../Pomodoro/pomodoro.html">Pomodoro <span class="glyphicon glyphicon-time"></span></a></li>
-    </ul>
-  </div>
+<nav class="navbar">
+  <a class="brand" href="#">
+    <div class="brand-dot"></div>
+    Student Pack
+  </a>
+  <ul class="nav-links">
+    <li><a href="../index.html" >🏠 Accueil</a></li>
+    <li><a href="../Time Table/timetable.php" >📅 Emploi du temps</a></li>
+    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
+    <li><a href="../Upcoming Exams/exams.html" class="active">📝 Examens</a></li>
+    <li><a href="../Notes/note.html" >📓 Notes</a></li>
+    <li><a href="../Emails/emails.html" >✉ Emails</a></li>
+    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
+    <li><a href="../dropout_risk_detector/dropout.html">🤖 Dropout Detector</a></li>
+    <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
+  </ul>
+  <!-- Shown by navbar_auth.js when logged in -->
+  <button class="btn-logout" id="logoutBtn" style="display:none">
+    ↩ Déconnexion
+  </button>
 </nav>
 
 <div class="container">

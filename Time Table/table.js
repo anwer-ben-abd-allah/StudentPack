@@ -5,7 +5,7 @@
 // Make sure api.php is at API_URL below.
 // ============================================
 
-const API_URL = 'api.php';   // adjust path if needed, e.g. '../backend/api.php'
+const API_URL = '../Authentification/slots_api.php';   // adjust path if needed, e.g. '../backend/api.php'
 
 // ── State ─────────────────────────────────────
 let subjects = [];   // { id, name, description, color }
@@ -15,13 +15,30 @@ let slots    = [];   // { id, subject, color, day, time }
 document.addEventListener('DOMContentLoaded', async () => {
     await loadSubjects();
     await loadSlots();
-    bindForm();
 });
 
 // ── API helpers ───────────────────────────────
 async function apiFetch(url, options = {}) {
     const res = await fetch(url, options);
-    const data = await res.json();
+    const text = await res.text();
+
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (err) {
+        // Try to parse the last valid JSON object in case of concatenated responses
+        const matches = text.match(/\{[^{}]*\}/g);
+        if (matches && matches.length > 0) {
+            try {
+                data = JSON.parse(matches[matches.length - 1]);
+            } catch (parseErr) {
+                throw new Error('Réponse API non valide : ' + text.trim().slice(0, 200));
+            }
+        } else {
+            throw new Error('Réponse API non valide : ' + text.trim().slice(0, 200));
+        }
+    }
+
     if (!data.success && data.error) throw new Error(data.error);
     return data;
 }
@@ -54,14 +71,16 @@ function populateSubjectSelect() {
    SUBJECT CARDS
 ════════════════════════════════════════════ */
 function renderSubjectCards() {
-    const container = document.getElementById('subjects-grid');
+    const container = document.querySelector('.subjects-grid');
+    console.log("Rendering subject cards in container:", container);
     if (!container) return;
     container.innerHTML = '';
+    console.log("subjects loaded:", subjects);
     subjects.forEach((s, i) => {
         const card = document.createElement('div');
-        card.className = 'subject-card';
-        card.style.setProperty('--c', s.color);
-        card.style.setProperty('--c-glow', s.color + '22');
+        card.className = 'sub-card';
+        card.style.setProperty('--sc', s.color);
+        card.style.setProperty('--sc-glow', s.color + '22');
         card.style.animationDelay = (i * 55) + 'ms';
         card.innerHTML = `<h3>${s.name}</h3><p>${s.description}</p>`;
         container.appendChild(card);
@@ -82,6 +101,13 @@ async function loadSlots() {
 
 // ── Render the weekly table ────────────────────
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+const DAY_CLASS = {
+    Lundi: 'day-lundi',
+    Mardi: 'day-mardi',
+    Mercredi: 'day-mercredi',
+    Jeudi: 'day-jeudi',
+    Vendredi: 'day-vendredi',
+};
 
 function renderTable() {
   const tbody = document.getElementById('emploiDuTemps');
@@ -105,6 +131,7 @@ function renderTable() {
         </div>
       </td>`;
     tbody.appendChild(tr);
+    console.log("No slots to display, showing empty state.");
     return;
   }
 
@@ -146,6 +173,7 @@ function renderTable() {
       </td>`;
 
     tbody.appendChild(tr);
+    console.log(`Rendered slot: ${slot.subject} on ${slot.day} at ${slot.time}`);   
   });
 }
 
@@ -193,7 +221,7 @@ async function deleteSlot(id) {
 
 // ── Simple toast notification ──────────────────
 function showNotification(msg, type = 'success') {
-    const toast = document.getElementById('tt-toast');
+    const toast = document.getElementById('toast');
     if (!toast) return;
     toast.textContent = msg;
     toast.className = 'toast ' + type + ' show';

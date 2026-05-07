@@ -23,11 +23,11 @@
     <li><a href="../index.html">🏠 Accueil</a></li>
     <li><a href="../Time Table/timetable.php" class="active">📅 Emploi du temps</a></li>
     <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
-    <li><a href="../Exams/exams.html">📝 Examens</a></li>
-    <li><a href="../Grades/grades.html">📓 Notes</a></li>
+    <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
+    <li><a href="../Notes/note.html">📓 Notes</a></li>
     <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
     <li><a href="../dropout_risk_detector/dropout.html">🤖 Dropout Detector</a></li>
-    <li><a href="../Authentification/authentification.php" id="loginLink">🔑 S'identifier</a></li>
+    <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
   </ul>
   <!-- Shown by navbar_auth.js when logged in -->
   <button class="btn-logout" id="logoutBtn" style="display:none">
@@ -81,11 +81,12 @@
     </div>
     <div class="add-section">
       <div class="form-grid">
-        <div class="fg">
-          <label>Matière</label>
-          <div class="sel-wrap">
-            <select id="matiere">
-              <option value="">Choisir une matière…</option>
+        <form action="" id="formMatiere">
+          <div class="fg">
+            <label>Matière</label>
+            <div class="sel-wrap">
+              <select id="matiere">
+                <option value="">Choisir une matière…</option>
               <option value="Algèbre">Algèbre</option>
               <option value="Analyse">Analyse</option>
               <option value="Applications Réparties">Applications Réparties</option>
@@ -122,11 +123,12 @@
         </div>
         <div class="fg btn-add-wrap">
           <label style="visibility:hidden">.</label>
-          <button class="btn-add" onclick="addSlot()">
+          <button class="btn-add" onclick="bindForm()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Ajouter
           </button>
         </div>
+        </form>
       </div>
     </div>
 

@@ -30,7 +30,21 @@ $method = $_SERVER['REQUEST_METHOD'];
 //  GET — list slots for this user
 // ════════════════════════════════════════════
 if ($method === 'GET') {
-    try {
+    if($_GET['action'] == "subjects") {
+        try {
+            $pdo  = getDB();
+            $stmt = $pdo->query('SELECT * FROM subjects');
+            echo json_encode(['success' => true, 'subjects' => $stmt->fetchAll()]);
+        } catch (PDOException $e) {
+            error_log('slots_api GET subjects: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Erreur base de données.']);
+        }
+        exit;
+        
+    }
+    else{
+        try {
         $pdo  = getDB();
         $stmt = $pdo->prepare(
             'SELECT t.id, s.name AS subject, s.color, t.day, t.time_slot AS time
@@ -47,20 +61,26 @@ if ($method === 'GET') {
         echo json_encode(['success' => false, 'error' => 'Erreur base de données.']);
     }
     exit;
+
+    }
+    
 }
 
 // ════════════════════════════════════════════
 //  POST — create a slot
 // ════════════════════════════════════════════
 if ($method === 'POST') {
-    $body    = json_decode(file_get_contents('php://input'), true) ?? [];
-    $subject = trim($body['subject'] ?? '');
+    if($_POST['action'] == "add_slot") {
+        $body    = json_decode(file_get_contents('php://input'), true) ?? [];
+    $subject = trim($body['subject_id'] ?? '');
     $day     = trim($body['day']     ?? '');
     $time    = trim($body['time']    ?? '');
-
+    echo json_encode(['received' => $body]); // debug
+    echo json_encode(['subject_id' => $subject, 'day' => $day, 'time' => $time]); // debug
     $validDays = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
     if (!$subject || !$day || !$time) {
+
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Champs manquants.']);
         exit;
@@ -81,7 +101,7 @@ if ($method === 'POST') {
         $pdo = getDB();
 
         // Resolve subject_id
-        $sStmt = $pdo->prepare('SELECT id FROM subjects WHERE name = ? LIMIT 1');
+        $sStmt = $pdo->prepare('SELECT id FROM subjects WHERE id = ? LIMIT 1');
         $sStmt->execute([$subject]);
         $subjectRow = $sStmt->fetch();
 
@@ -120,6 +140,45 @@ if ($method === 'POST') {
         }
     }
     exit;
+        
+    }
+    else{
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+        $username = trim($body['username'] ?? '');
+        $password = trim($body['password'] ?? '');
+
+        if (!$username || !$password) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Champs manquants.']);
+            exit;
+        }
+
+        try {
+            $pdo = getDB();
+
+            // Check if user exists
+            $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ?');
+            $stmt->execute([$username]);
+            if ($stmt->fetch()) {
+                http_response_code(409);
+                echo json_encode(['success' => false, 'error' => 'Utilisateur existe déjà.']);
+                exit;
+            }
+
+            // Insert
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            $ins = $pdo->prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+            $ins->execute([$username, $hashed]);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            error_log('slots_api POST register: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Erreur base de données.']);
+        }
+        exit;
+    }
+
+    
 }
 
 // ════════════════════════════════════════════
