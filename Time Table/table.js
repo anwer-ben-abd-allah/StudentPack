@@ -91,9 +91,7 @@ function renderSubjectCards() {
 async function loadSlots() {
     try {
         const data = await apiFetch(`${API_URL}?action=slots`);
-        console.log("Data from API:", data);
-        slots = data;
-        console.log("Parsed slots:", slots);
+        slots = data.slots;
         renderTable();
         updateStatCounter();
     } catch (err) {

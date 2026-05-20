@@ -11,14 +11,17 @@
 // ════════════════════════════════════════════
 
 session_start();
-
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 require_once __DIR__ . '/config.php';
-echo '$SESSION: ' . json_encode($_SESSION); // debug
-// ── Auth guard ───────────────────────────────
 
+// ── Auth guard ───────────────────────────────
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Non authentifié.']);
+    exit;
+}
 
 $userId = (int) $_SESSION['user_id'];
 $method = $_SERVER['REQUEST_METHOD'];
@@ -27,7 +30,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 //  GET — list slots for this user
 // ════════════════════════════════════════════
 if ($method === 'GET') {
-    
     if($_GET['action'] == "subjects") {
         try {
             $pdo  = getDB();
@@ -164,9 +166,9 @@ if ($method === 'POST') {
             }
 
             // Insert
-            
-            $ins = $pdo->prepare('INSERT INTO users (username, password,full_name,created_at) VALUES (?, ?, ?, NOW())');
-            $ins->execute([$username, $password, $username]);
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            $ins = $pdo->prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+            $ins->execute([$username, $hashed]);
             echo json_encode(['success' => true]);
         } catch (PDOException $e) {
             error_log('slots_api POST register: ' . $e->getMessage());
