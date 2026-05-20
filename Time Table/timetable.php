@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Student Pack · Emploi du Temps</title>
   <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="timetable.css" />
+  <link rel="stylesheet" href="../index.css" />
 </head>
 <body>
   <script src="../navbar_auth.js"></script>
@@ -13,22 +13,12 @@
 <!-- Particles -->
 <div class="particles" id="particles"></div>
 
-<!-- Navbar -->
-<nav class="navbar">
-  <a class="brand" href="#">
-    <div class="brand-dot"></div>
-    Student Pack
-  </a>
-  <ul class="nav-links">
-    <li><a href="../index.html">🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php" class="active">📅 Emploi du temps</a></li>
-    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
-    <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
-    <li><a href="../Notes/note.html">📓 Notes</a></li>
-    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
-    <li><a href="../dropout_risk_detector/dropout.html">🤖 Dropout Detector</a></li>
-    <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
-  </ul>
+<?php
+// including the navbar from the root folder
+include '../navbar.php';
+?>
+
+
   <!-- Shown by navbar_auth.js when logged in -->
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion

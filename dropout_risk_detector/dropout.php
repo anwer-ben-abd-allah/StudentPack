@@ -540,23 +540,10 @@
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <a class="brand" href="#">
-    <div class="brand-dot"></div>
-    Student Pack
-  </a>
-  <ul class="nav-links">
-    <li><a href="../index.html">🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php" >📅 Emploi du temps</a></li>
-    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
-    <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
-    <li><a href="../Notes/note.html">📓 Notes</a></li>
-    <li><a href="../Emails/emails.html">✉ Emails</a></li>
-    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
-    <li><a href="../dropout_risk_detector/dropout.html"  class="active">🤖 Dropout Detector</a></li>
-    <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
-  </ul>
+<?php
+// including the navbar from the root folder
+include '../navbar.php';
+?>
   <!-- Shown by navbar_auth.js when logged in -->
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion
