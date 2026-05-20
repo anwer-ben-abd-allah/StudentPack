@@ -17,11 +17,7 @@ header('Cache-Control: no-store');
 require_once __DIR__ . '/config.php';
 
 // ── Auth guard ───────────────────────────────
-if (empty($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Non authentifié.']);
-    exit;
-}
+
 
 $userId = (int) $_SESSION['user_id'];
 $method = $_SERVER['REQUEST_METHOD'];
