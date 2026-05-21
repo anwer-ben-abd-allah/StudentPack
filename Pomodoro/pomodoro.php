@@ -1,3 +1,6 @@
+<?php 
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +26,7 @@ include '../navbar.php';
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion
   </button>
-</nav>
+
 <div class="pomodoro">
     <h2>Pomodoro Timer</h2>
     <div class="timer">25:00</div>
@@ -39,5 +42,6 @@ include '../navbar.php';
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Latest compiled JavaScript -->
     <script src="pomodoro.js"></script>
+    <script src="../navbar_auth.js"></script>
 </body>
 </html>

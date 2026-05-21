@@ -1,9 +1,13 @@
+<?php 
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Dropout Risk Detector</title>
+<link rel="stylesheet" href="../index.css">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -55,118 +59,7 @@
   .blob-1 { width: 500px; height: 500px; background: #6ee7b7; top: -150px; left: -100px; }
   .blob-2 { width: 400px; height: 400px; background: #38bdf8; bottom: -100px; right: -80px; }
 
-  /* ── NAVBAR ── */
-  .navbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0 32px;
-    height: 64px;
-    background: rgba(11,15,26,0.75);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 17px;
-    color: #fff;
-    flex-shrink: 0;
-    margin-right: 36px;
-  }
-  .nav-brand-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 10px var(--accent);
-    animation: pulse 2.5s infinite;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    list-style: none;
-    flex: 1;
-  }
-  .nav-links a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
-    text-decoration: none;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .nav-links a:hover {
-    color: var(--text);
-    background: rgba(255,255,255,0.05);
-  }
-  .nav-links a.active {
-    color: var(--accent);
-    background: rgba(110,231,183,0.1);
-    border: 1px solid rgba(110,231,183,0.2);
-  }
-
-  .nav-logout {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 16px;
-    background: rgba(248,113,113,0.1);
-    border: 1px solid rgba(248,113,113,0.2);
-    color: var(--danger);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .nav-logout:hover {
-    background: rgba(248,113,113,0.2);
-  }
-
-  /* mobile hamburger */
-  .nav-toggle {
-    display: none;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 7px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-left: auto;
-    font-size: 18px;
-    line-height: 1;
-  }
-  @media (max-width: 768px) {
-    .navbar { padding: 0 16px; }
-    .nav-links { display: none; position: absolute; top: 64px; left: 0; right: 0;
-      flex-direction: column; align-items: stretch; gap: 4px;
-      background: rgba(11,15,26,0.97); border-bottom: 1px solid var(--border);
-      padding: 12px 16px 16px; }
-    .nav-links.open { display: flex; }
-    .nav-links a { padding: 10px 14px; }
-    .nav-logout { display: none; }
-    .nav-toggle { display: block; }
-  }
-
+  
   /* LAYOUT */
   .wrapper {
     position: relative;
@@ -540,23 +433,10 @@
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <a class="brand" href="#">
-    <div class="brand-dot"></div>
-    Student Pack
-  </a>
-  <ul class="nav-links">
-    <li><a href="../index.html">🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php" >📅 Emploi du temps</a></li>
-    <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
-    <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
-    <li><a href="../Notes/note.html">📓 Notes</a></li>
-    <li><a href="../Emails/emails.html">✉ Emails</a></li>
-    <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
-    <li><a href="../dropout_risk_detector/dropout.html"  class="active">🤖 Dropout Detector</a></li>
-    <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
-  </ul>
+<?php
+// including the navbar from the root folder
+include '../navbar.php';
+?>
   <!-- Shown by navbar_auth.js when logged in -->
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion

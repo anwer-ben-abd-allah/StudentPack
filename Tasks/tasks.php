@@ -1,3 +1,6 @@
+<?php 
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +24,8 @@ include '../navbar.php';
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion
   </button>
-</nav>
+    <script src="../navbar_auth.js">
+    </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Latest compiled JavaScript -->
 <p>set monthly or daily tasks , save finished tasks , sort tasks by type</p>

@@ -1,3 +1,6 @@
+<?php 
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +70,7 @@
             color: #888;
             font-size: 12px;
             float: right;
+            margin-left: 10px;
         }
         .note-title {
             font-size: 16px;
@@ -83,20 +87,15 @@
             margin-left: 10px;
         }
     </style>
-      <link rel="stylesheet" href="../Time Table/timetable.css">
+    <link rel="stylesheet" href="../Time Table/timetable.css">
     <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  
 </head>
 <body>
+
 <?php
-// including the navbar from the root folder
+// Includes the global navbar 
 include '../navbar.php';
 ?>
-  <!-- Shown by navbar_auth.js when logged in -->
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
-</nav>
 
     <div class="main-container">
         <div class="row">
@@ -162,16 +161,15 @@ include '../navbar.php';
                         <div class="note-title">SQL </div>
                         <div class="note-content">3ana compte rendu 9bl lds</div>
                     </div>
-                    
-                    
                 </div>
             </div>
         </div>
     </div>
-    
-    <center>
-        <a href="../index.html">Go back.</a>
-    </center>
 
+    <!-- Script tags for authentication and framework components -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="../Authentification/navbar_auth.js"></script>
+    <script src="../navbar_auth.js"> </script>
 </body>
 </html>
