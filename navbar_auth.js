@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════════════
 //  navbar_auth.js  —  Student Pack · Global Auth UI
 //
-//  Include this script on EVERY page (index.html, tasks, exams…).
+//  Include this script on EVERY page (index.php, tasks, exams…).
 //  It calls authcheck.php once on load and:
 //    • Injects the username into a #navUser element (if present)
 //    • Shows/hides the logout button (#logoutBtn)
@@ -14,7 +14,7 @@
 (function () {
   // ── Resolve root-relative paths ─────────────────────────────
   // Count how many directories deep the current page is.
-  // e.g.  /StudentPack/index.html          → depth 1 → prefix = './'
+  // e.g.  /StudentPack/index.php        → depth 1 → prefix = './'
   //       /StudentPack/Time Table/timetable.php → depth 2 → prefix = '../'
   function getRootPrefix() {
     const parts = window.location.pathname.replace(/\/[^/]+$/, '').split('/').filter(Boolean);
@@ -97,7 +97,7 @@
     }
    
 
-    // ── Inject user pill into Bootstrap navbar (index.html) ──
+    // ── Inject user pill into Bootstrap navbar (index.php) ──
     // If there's a navbar-right ul and no #navUser yet, inject one.
     if (loggedIn && displayName) {
       const navbarRight = document.querySelector('.navbar-right');

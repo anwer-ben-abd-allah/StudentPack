@@ -92,7 +92,7 @@ async function doLogin() {
     if (data.success) {
       currentUser = data.username;
       passEl.value = '';
-      window.location.href = '../index.html';
+      window.location.href = '../index.php';
     } else {
       showLoginError(data.error || 'Identifiants incorrects.');
       passEl.value = '';
