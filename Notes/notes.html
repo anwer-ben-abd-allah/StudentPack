@@ -1,93 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Table</title>
-        <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../font.css">
-
-  </head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Pack - Notes</title>
-  <style>
-    /* CSS: Making it look good */
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      /* display: flex; */
-      height: 100vh;
-    }
+  <title>Notes — Student Pack</title>
 
-    /* Sidebar Styles */
-    .notes-sidebar {
-      width: 30%;
-      background: #f4f4f4;
-      border-right: 2px solid #ddd;
-      padding: 20px;
-    }
+  <link rel="stylesheet" href="../Time Table/timetable.css">
 
-    .note-item {
-      padding: 10px;
-      background: white;
-      margin-bottom: 10px;
-      cursor: pointer;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .note-item:hover {
-      background: #e0e0e0;
-    }
-
-    /* Main Editor Styles */
-    .notes-preview {
-      width: 70%;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    textarea {
-      height: 300px;
-      resize: none;
-    }
-
-    button {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 5px;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-  </style>
-    <link rel="stylesheet" href="../Time Table/timetable.css">
-    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  
+  <link rel="stylesheet" href="notes.css">
 </head>
-
-
 <body>
 <nav class="navbar">
   <a class="brand" href="#">
@@ -95,77 +16,119 @@
     Student Pack
   </a>
   <ul class="nav-links">
-    <li><a href="../index.html" >🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php" >📅 Emploi du temps</a></li>
+    <li><a href="../index.html">🏠 Accueil</a></li>
+    <li><a href="../Time Table/timetable.php">📅 Emploi du temps</a></li>
     <li><a href="../Tasks/tasks.html">✅ Tâches</a></li>
     <li><a href="../Upcoming Exams/exams.html">📝 Examens</a></li>
     <li><a href="../Notes/notes.html" class="active">📓 Notes</a></li>
-    <li><a href="../Emails/emails.html" >✉ Emails</a></li>
+    <li><a href="../Emails/emails.html">✉ Emails</a></li>
     <li><a href="../Pomodoro/pomodoro.html">⏱ Pomodoro</a></li>
     <li><a href="../dropout_risk_detector/dropout.html">🤖 Dropout Detector</a></li>
     <li><a href="../Authentification/authentification.php" id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
   </ul>
-  <!-- Shown by navbar_auth.js when logged in -->
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
+  <button class="btn-logout" id="logoutBtn" style="display:none">↩ Déconnexion</button>
 </nav>
+<div class="app">
+  <aside class="sidebar">
 
-  <div class="notes-sidebar">
-    <h2>My Notes</h2>
-    <div id="notes-list">
-      <div class="note-item">Math Homework</div>
-      <div class="note-item">Physics Definitions</div>
+    <div class="sidebar-header">
+      <h1>My Notes</h1>
+      <button class="btn-new" id="btn-new">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="12" y1="5"  x2="12" y2="19"/>
+          <line x1="5"  y1="12" x2="19" y2="12"/>
+        </svg>
+        New note
+      </button>
     </div>
-  </div>
 
-  <div class="notes-preview">
-    <input type="text" id="note-title" placeholder="Note Title...">
-    <textarea id="note-body" placeholder="Type your notes here..."></textarea>
-    <button id="btn-save">Save Note</button>
-  </div>
-  <script>
-    //get the notes
-   let notes = JSON.parse(localStorage.getItem('myAppNotes')) || [];
-    //get and cean the notes list
-    const list = document.getElementById('notes-list');
-    list.innerHTML = '';
-    //loop through the notes
-    function renderNotes() {
-        list.innerHTML = ''; // Clear the old list
-        
-        // FIX 2: forEach uses parentheses ( )
-        notes.forEach(function(note) {
-            const noteItem = document.createElement('div');
-            noteItem.className = 'note-item';
-            noteItem.innerText = note.title;
-            list.appendChild(noteItem); 
-        });
-    }
-        // add event listner
-    const svbtn=document.getElementById('btn-save');
-    svbtn.addEventListener('click',function(){
-      const title = document.getElementById('note-title');
-      const body = document.getElementById('note-body');
-      if(title.value ===''){
-        alert('Please enter a title');
-        return;
-      }
-      const note={
-        title:title.value,
-        body:body.value
-      }
-      notes.push(note);
-      localStorage.setItem('myAppNotes',JSON.stringify(notes));
-      title.value='';
-      body.value='';
-      renderNotes();
+    <div class="sidebar-search">
+      <input type="search" id="search" placeholder="Search notes…" autocomplete="off">
+    </div>
+
+    <div class="notes-list" id="notes-list">
+    </div>
+
+  </aside>
+
+  
+  <main class="editor-pane">
+    <div class="editor-welcome" id="welcome">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9"  y1="15" x2="15" y2="15"/>
+      </svg>
+      <p>Select a note or create a new one.</p>
+      <small>All notes are saved to the database.</small>
+      <button class="btn-new" id="btn-new-welcome" style="margin-top:10px; width:auto; padding:8px 20px;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="12" y1="5"  x2="12" y2="19"/>
+          <line x1="5"  y1="12" x2="19" y2="12"/>
+        </svg>
+        Create a note
+      </button>
+    </div>
+    <div id="editor" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+
+      <!-- Toolbar -->
+      <div class="editor-toolbar">
+
+        <!-- Subject dropdown — options injected by notes.js from SUBJECTS constant -->
+        <select id="e-subject" aria-label="Subject">
+          <option value="">— Subject —</option>
+        </select>
+
+        <input type="date" id="e-date" aria-label="Date">
+
+        <div class="toolbar-gap"></div>
+
+        <button class="btn-delete" id="btn-delete" title="Delete note" aria-label="Delete note">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+
+        <button class="btn-save" id="btn-save" aria-label="Save note">
+          Save &nbsp;<kbd style="font-size:10px; opacity:0.55">⌘S</kbd>
+        </button>
+
+      </div>
+      <input
+        type="text"
+        id="e-title"
+        class="editor-title"
+        placeholder="Note title…"
+        aria-label="Note title"
+        autocomplete="off"
+      >
+
+      <!-- Body textarea -->
+      <textarea
+        id="e-body"
+        class="editor-body"
+        placeholder="Start writing…"
+        aria-label="Note body"
+        spellcheck="true"
+      ></textarea>
+      <div class="editor-status">
+        <span id="word-count">0 words</span>
+        <span id="save-status" class="status-saved">Saved ✓</span>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
 
 
-    })
-  </script>
-
+<script src="../navbar_auth.js"></script>
+<script src="notes.js"></script>
 
 </body>
-
 </html>
