@@ -33,7 +33,7 @@ include '../navbar.php';
         <div class="col-md-12">
             <div class="jumbotron urgent-box text-center">
                 <h4><span class="glyphicon glyphicon-time"></span> DÉBUT DES EXAMENS (J-J)</h4>
-                <h2 id="exam-subject" class="exam-title">Analyse</h2>
+                <h2 id="exam-subject" class="exam-title">Architecture des réseaux</h2>
                 
                 <div class="row countdown-row">
                     <div class="col-xs-3"><h2 id="days" class="timer-digits">00</h2><small>Jours</small></div>
@@ -42,7 +42,7 @@ include '../navbar.php';
                     <div class="col-xs-3"><h2 id="seconds" class="timer-digits">00</h2><small>Sec</small></div>
                 </div>
                 <br>
-                <p class="exam-location"><span class="glyphicon glyphicon-map-marker"></span> Amphi A</p>
+                <p class="exam-location"><span class="glyphicon glyphicon-map-marker"></span> Amphi A8</p>
             </div>
         </div>
     </div>
@@ -52,7 +52,7 @@ include '../navbar.php';
             <div class="panel panel-default">
                 <div class="panel-heading planning-header">
                     <h3 class="panel-title">
-                        <span class="glyphicon glyphicon-calendar"></span> Planning DS - Semestre 2
+                        <span class="glyphicon glyphicon-calendar"></span> Planning Examens
                     </h3>
                 </div>
                 <div class="table-responsive">
@@ -67,69 +67,60 @@ include '../navbar.php';
                             </tr>
                         </thead>
                         <tbody>
-                            
-                            <tr class="danger">
-                                <td class="merged-date">Jeu 06 Mar</td>
-                                <td>08:30</td>
-                                <td><strong>Analyse</strong></td>
-                                <td>Amphi A5</td>
+                            <tr class="danger" data-datetime="2026-05-18T13:00:00" data-subject="Architecture des réseaux" data-room="Amphi A8">
+                                <td rowspan="2" class="merged-date">Lundi 18/05/2026</td>
+                                <td>13:00</td>
+                                <td><strong>Architecture des réseaux</strong></td>
+                                <td>Amphi A8</td>
                                 <td class="text-center">3.0</td>
                             </tr>
-
-                            <tr class="danger">
-                                <td rowspan="2" class="merged-date">Ven 07 Mar</td>
-                                <td>08:30</td>
-                                <td><strong>Réseaux</strong></td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">3.0</td>
-                            </tr>
-                            <tr class="danger">
-                                <td>10:00</td>
-                                <td>SGBD</td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">2.5</td>
-                            </tr>
-
-                            <tr class="warning">
-                                <td rowspan="2" class="merged-date">Lun 10 Mar</td>
-                                <td>08:30</td>
-                                <td><strong>Conception (CSI)</strong></td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">4.0</td>
-                            </tr>
-                            <tr class="warning">
-                                <td>10:00</td>
-                                <td>Droit</td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">1.5</td>
-                            </tr>
-
-                            <tr>
-                                <td rowspan="2" class="merged-date">Mar 11 Mar</td>
-                                <td>08:30</td>
-                                <td><strong>Algèbre</strong></td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">3.0</td>
-                            </tr>
-                            <tr>
-                                <td>10:00</td>
-                                <td>Anglais</td>
-                                <td>Amphi A5</td>
-                                <td class="text-center">1.5</td>
-                            </tr>
-
-                            <tr>
-                                <td rowspan="2" class="merged-date">Mer 12 Mar</td>
-                                <td>08:30</td>
-                                <td><strong>Applications Réparties</strong></td>
-                                <td>Salle 201</td>
-                                <td class="text-center">2.5</td>
-                            </tr>
-                            <tr>
-                                <td>10:00</td>
+                            <tr class="danger" data-datetime="2026-05-18T15:00:00" data-subject="Comptabilité" data-room="Amphi A8">
+                                <td>15:00</td>
                                 <td>Comptabilité</td>
-                                <td>Salle 201</td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">2.0</td>
+                            </tr>
+
+                            <tr class="warning" data-datetime="2026-05-19T13:00:00" data-subject="Conception des Systèmes d'Information" data-room="Amphi A8">
+                                <td rowspan="2" class="merged-date">Mardi 19/05/2026</td>
+                                <td>13:00</td>
+                                <td><strong>Conception des Systèmes d'Information</strong></td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+                            <tr class="warning" data-datetime="2026-05-19T15:00:00" data-subject="Droit" data-room="Amphi A8">
+                                <td>15:00</td>
+                                <td>Droit</td>
+                                <td>Amphi A8</td>
                                 <td class="text-center">1.5</td>
+                            </tr>
+
+                            <tr data-datetime="2026-05-20T13:00:00" data-subject="Algèbre" data-room="Amphi A8">
+                                <td rowspan="2" class="merged-date">Mercredi 20/05/2026</td>
+                                <td>13:00</td>
+                                <td><strong>Algèbre</strong></td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+                            <tr data-datetime="2026-05-20T15:00:00" data-subject="UNIX" data-room="Amphi A8">
+                                <td>15:00</td>
+                                <td>UNIX</td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">2.0</td>
+                            </tr>
+
+                            <tr class="info" data-datetime="2026-05-21T13:00:00" data-subject="Développement Web" data-room="Amphi A8">
+                                <td rowspan="2" class="merged-date">Jeudi 21/05/2026</td>
+                                <td>13:00</td>
+                                <td><strong>Développement Web</strong></td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">3.0</td>
+                            </tr>
+                            <tr class="info" data-datetime="2026-05-21T15:00:00" data-subject="Applications réparties" data-room="Amphi A8">
+                                <td>15:00</td>
+                                <td>Applications réparties</td>
+                                <td>Amphi A8</td>
+                                <td class="text-center">2.5</td>
                             </tr>
 
                         </tbody>
@@ -138,10 +129,94 @@ include '../navbar.php';
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading planning-header">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-search"></span> Rechercher un examen
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <form id="search-exam-form" class="form-inline">
+                        <div class="form-group">
+                            <label for="search-exam-input">Nom d'examen</label>
+                            <input id="search-exam-input" type="text" class="form-control" placeholder="Entrez le nom de l'examen" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                    </form>
+                    <div id="search-result" class="search-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading planning-header">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-plus"></span> Ajouter une matière
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <form id="add-exam-form" class="form-inline">
+                        <div class="form-group">
+                            <label for="exam-date">Date</label>
+                            <input id="exam-date" type="date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="exam-time">Heure</label>
+                            <input id="exam-time" type="time" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="exam-subject-input">Matière</label>
+                            <input id="exam-subject-input" type="text" class="form-control" placeholder="Matière" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="exam-room">Salle</label>
+                            <input id="exam-room" type="text" class="form-control" value="Amphi A8" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="exam-coeff">Coeff</label>
+                            <input id="exam-coeff" type="number" min="0" step="0.5" class="form-control" value="1.0" required>
+                        </div>
+                        <button id="add-exam-button" type="submit" class="btn btn-success">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading planning-header">
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-trash"></span> Retirer une matière
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <form id="remove-exam-form" class="form-inline">
+                        <div class="form-group">
+                            <label for="remove-exam-subject">Matière</label>
+                            <input id="remove-exam-subject" type="text" class="form-control" placeholder="Matière" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="remove-exam-date">Date</label>
+                            <input id="remove-exam-date" type="date" class="form-control" required>
+                        </div>
+                        <button id="remove-exam-button" type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <footer class="container-fluid text-center">
-    <p>Student Pack © 2025 | <a href="https://insat.rnu.tn/" target="_blank" class="insat-link">Site Officiel de l'INSAT</a></p>
+    <p>Student Pack © 2026</p>
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
