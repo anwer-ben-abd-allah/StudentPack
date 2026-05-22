@@ -20,10 +20,6 @@ session_start();
 include '../navbar.php';
 ?>
 
-  <!-- Shown by navbar_auth.js when logged in -->
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
     <script src="../navbar_auth.js">
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->

@@ -30,9 +30,6 @@
     <li><a href="../dropout_risk_detector/dropout.html" id="dropoutLink">🤖 Dropout Detector</a></li>
     <li><a href="../Authentification/authentification.php" class="active">🔑 S'identifier</a></li>
   </ul>
-  <button class="btn-logout" id="logoutBtn" style="display:none" onclick="logout()">
-    ↩ Déconnexion
-  </button>
 </nav>
 <!-- ═══════════════ LOGIN GATE ═══════════════ -->
 <div id="loginGate">

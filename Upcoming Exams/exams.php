@@ -24,11 +24,6 @@ session_start();
 // including the navbar from the root folder
 include '../navbar.php';
 ?>
-  <!-- Shown by navbar_auth.js when logged in -->
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
-</nav>
 
 <div class="container">
     
@@ -143,9 +138,6 @@ include '../navbar.php';
     </div>
 </div>
 
-<footer class="container-fluid text-center">
-    <p>Student Pack © 2025 | <a href="https://insat.rnu.tn/" target="_blank" class="insat-link">Site Officiel de l'INSAT</a></p>
-</footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>

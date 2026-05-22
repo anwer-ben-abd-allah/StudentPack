@@ -18,7 +18,7 @@ $current_file = basename($_SERVER['PHP_SELF']);
   <li><a href="/StudentPack/dropout_risk_detector/dropout.php" <?php echo ($current_file == 'dropout.php') ? 'class="active"' : ''; ?>>🤖 Dropout Detector</a></li>
   <li><a href="/StudentPack/Authentification/authentification.php" <?php echo ($current_file == 'authentification.php') ? 'class="active"' : ''; ?> id="loginLink" class="navbar-right">🔑 S'identifier</a></li>
 </ul>
-</nav>
+
   <!-- Shown by navbar_auth.js when logged in -->
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion
