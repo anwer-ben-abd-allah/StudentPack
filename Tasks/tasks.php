@@ -4,30 +4,116 @@ session_start();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Pack</title>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="../Time Table/timetable.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Pack · Tâches</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../index.css" />
+  <link rel="stylesheet" href="tasks.css" />
 </head>
 <body>
+  <script src="../navbar_auth.js"></script>
 
-<?php
-// including the navbar from the root folder
-include '../navbar.php';
-?>
-
-  <!-- Shown by navbar_auth.js when logged in -->
+  <?php include '../navbar.php'; ?>
   <button class="btn-logout" id="logoutBtn" style="display:none">
     ↩ Déconnexion
   </button>
-    <script src="../navbar_auth.js">
-    </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jQuery library -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> <!-- Latest compiled JavaScript -->
-<p>set monthly or daily tasks , save finished tasks , sort tasks by type</p>
+
+  <main class="tasks-page">
+    <section class="tasks-hero">
+      <span class="eyebrow">✅ Tâches</span>
+      <h1>Organisez vos devoirs et révisions</h1>
+      <p>Ajoutez des tâches, suivez vos priorités et terminez vos échéances à temps.</p>
+      <p style="margin-top:.6rem; color:#64748b; font-size:.95rem;">Demo mode: vous pouvez utiliser les tâches sans vous connecter. Les données non authentifiées sont stockées localement dans votre session.</p>
+    </section>
+
+    <section class="tasks-summary">
+      <div class="summary-card">
+        <span>Total</span>
+        <strong id="statTotal">0</strong>
+      </div>
+      <div class="summary-card">
+        <span>Complétées</span>
+        <strong id="statDone">0</strong>
+      </div>
+      <div class="summary-card">
+        <span>En retard</span>
+        <strong id="statOverdue">0</strong>
+      </div>
+      <div class="summary-card">
+        <span>À faire</span>
+        <strong id="statPending">0</strong>
+      </div>
+    </section>
+
+    <section class="tasks-toolbar">
+      <div class="toolbar-row">
+        <select id="filterStatus">
+          <option value="all">Tous les statuts</option>
+          <option value="todo">À faire</option>
+          <option value="done">Complétées</option>
+          <option value="overdue">En retard</option>
+        </select>
+        <!-- category filter removed -->
+        <select id="filterPriority">
+          <option value="all">Toutes priorités</option>
+          <option>Haute</option>
+          <option>Moyenne</option>
+          <option>Basse</option>
+        </select>
+        <input id="filterSearch" type="search" placeholder="Rechercher..." />
+      </div>
+    </section>
+
+    <section class="tasks-grid">
+      <div class="task-form-panel">
+        <div class="panel-header">
+          <h2 id="formTitle">Nouvelle tâche</h2>
+        </div>
+        <form id="taskForm">
+          <div class="field-group">
+            <label for="taskTitle">Titre</label>
+            <input id="taskTitle" name="title" type="text" placeholder="Entrer le titre de la tâche" required />
+          </div>
+          <div class="field-group">
+            <label for="taskDescription">Description (facultatif)</label>
+            <textarea id="taskDescription" name="description" placeholder="Notes, détails ou consignes"></textarea>
+          </div>
+          <!-- category field removed -->
+          <div class="field-group">
+            <label for="taskPriority">Priorité</label>
+            <select id="taskPriority" name="priority">
+              <option selected>Moyenne</option>
+              <option>Haute</option>
+              <option>Basse</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="taskDueDate">Date d’échéance</label>
+            <input id="taskDueDate" name="due_date" type="date" />
+          </div>
+          <div class="field-group">
+            <label for="taskDueTime">Heure (optionnel)</label>
+            <input id="taskDueTime" name="due_time" type="time" />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cancelEdit" style="display:none;">Annuler</button>
+            <button type="submit" id="submitButton">Ajouter</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="task-list-panel">
+        <div class="panel-header">
+          <h2>Mes tâches</h2>
+        </div>
+        <div id="taskList" class="task-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="tasks.js"></script>
 </body>
 </html>
