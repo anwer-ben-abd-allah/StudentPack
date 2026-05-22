@@ -16,9 +16,6 @@ session_start();
   <script src="../navbar_auth.js"></script>
 
   <?php include '../navbar.php'; ?>
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
 
   <main class="tasks-page">
     <section class="tasks-hero">

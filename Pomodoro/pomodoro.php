@@ -22,11 +22,6 @@ session_start();
 // including the navbar from the root folder
 include '../navbar.php';
 ?>
-  <!-- Shown by navbar_auth.js when logged in -->
-  <button class="btn-logout" id="logoutBtn" style="display:none">
-    ↩ Déconnexion
-  </button>
-
 <div class="pomodoro">
     <h2>Pomodoro Timer</h2>
     <div class="timer">25:00</div>

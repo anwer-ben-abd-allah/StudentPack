@@ -13,26 +13,7 @@
 <div class="particles" id="particles"></div>
 
 <!-- Navbar -->
-<nav class="navbar">
-  <a class="brand" href="#">
-    <div class="brand-dot"></div>
-    Student Pack
-  </a>
-  <ul class="nav-links">
-    <li><a href="../index.html" id="homeLink">🏠 Accueil</a></li>
-    <li><a href="../Time Table/timetable.php" id="timetableLink">📅 Emploi du temps</a></li>
-    <li><a href="../Tasks/tasks.html" id="tasksLink">✅ Tâches</a></li>
-    <li><a href="../Exams/exams.html" id="examsLink">📝 Examens</a></li>
-    <li><a href="../Emails/emails.html" id="emailsLink">✉️ Emails</a></li>
-    <li><a href="../Notes/notes.html" id="notesLink">📝 Notes</a></li>
-    <li><a href="../Grades/grades.html" id="gradesLink">📓 Notes</a></li>
-    <li><a href="../Pomodoro/pomodoro.html" id="pomodoroLink">⏱ Pomodoro</a></li>
-    <li><a href="../dropout_risk_detector/dropout.html" id="dropoutLink">🤖 Dropout Detector</a></li>
-    <li><a href="../Authentification/authentification.php" class="active">🔑 S'identifier</a></li>
-  </ul>
-  <button class="btn-logout" id="logoutBtn" style="display:none" onclick="logout()">
-    ↩ Déconnexion
-  </button>
+<?php include '../navbar.php'; ?>
 </nav>
 <!-- ═══════════════ LOGIN GATE ═══════════════ -->
 <div id="loginGate">
